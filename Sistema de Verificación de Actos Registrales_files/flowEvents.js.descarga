@@ -1,0 +1,3120 @@
+$(document).ready(function() {
+	
+	var location = new String(window.location);
+	
+	var num = parseInt(0);
+
+	if (location.lastIndexOf(".jsp") > -1 || location.lastIndexOf(".html") > -1) {
+		location = location.substring(0, location.lastIndexOf("/"));
+	}
+
+	$('#fdFirmaDigital').css({'text-transform': ''});
+
+	var bandera = false;
+
+	// configuracion de spinner
+	spinOpts = {
+		lines : 15, // The number of lines to draw
+		length : 0, // The length of each line
+		width : 10, // The line thickness
+		radius : 30, // The radius of the inner circle
+		corners : 1, // Corner roundness (0..1)
+		rotate : 90, // The rotation offset
+		direction : 1, // 1: clockwise, -1: counterclockwise
+		color : '#000', // #rgb or #rrggbb or array of colors
+		speed : 1, // Rounds per second
+		shadow : true, // Whether to render a shadow
+		zIndex : 100, // The z-index (defaults to 2000000000)
+		top : 'auto', // Top position relative to parent in px
+		left : 'auto'// Left position relative to parent in
+						// px
+	};
+	spinner = new Spinner(spinOpts);
+
+	$.get("UtilServlet",{seleccion : "ESTADOS"},
+		function(data) {
+			var entidades = '<option value="">- Selecciona la Entidad -</option>';
+
+			if (data.length > 0) {
+				for (i in data) {
+					entidades += '<option value="'
+							+ data[i].entCodigo
+							+ '">'
+							+ data[i].descripcion
+							+ '</option>';
+				}
+			}
+			$('#dpEstado').html(entidades);
+			$('#drEstado').html(entidades);
+		}, "json");
+
+	var tipo = undefined;
+	var meses = new Array("", "Enero", "Febrero", "Marzo",
+			"Abril", "Mayo", "Junio", "Julio", "Agosto",
+			"Septiembre", "Octubre", "Noviembre", "Diciembre");
+
+	$('#dpAnioNac').append($('<option />').val("").html("- A&ntilde;o -"));
+	for ( var i = new Date().getFullYear(); i > 1900; i--) {
+		$('#dpAnioNac').append($('<option />').val(i).html(i));
+	}
+
+	$('#dpMesNac').append($('<option />').val("").html("- Mes -"));
+	for (i = 1; i < 13; i++) {
+		var valor = i < 10 ? "0" + i : "" + i;
+		$('#dpMesNac').append(
+				$('<option />').val(valor).html(meses[i]));
+	}
+
+	$('#dpDiaNac').append($('<option />').val("").html("- D&iacute;a -"));
+	for (i = 1; i < 32; i++) {
+		var valor = i < 10 ? "0" + i : "" + i;
+		$('#dpDiaNac').append(
+				$('<option />').val(valor).html(valor));
+	}
+
+	$('#AnioDef').append($('<option />').val("").html("- A&ntilde;o -"));
+	for ( var i = new Date().getFullYear(); i > 1900; i--) {
+		$('#AnioDef').append($('<option />').val(i).html(i));
+	}
+
+	$('#MesDef').append($('<option />').val("").html("- Mes -"));
+	for (i = 1; i < 13; i++) {
+		var valor = i < 10 ? "0" + i : "" + i;
+		$('#MesDef').append(
+				$('<option />').val(valor).html(meses[i]));
+	}
+
+	$('#DiaDef').append($('<option />').val("").html("- D&iacute;a -"));
+	for (i = 1; i < 32; i++) {
+		var valor = i < 10 ? "0" + i : "" + i;
+		$('#DiaDef').append(
+				$('<option />').val(valor).html(valor));
+	}
+	
+	limpiarCampos = function() {
+		$('#dpNombre').val('');
+		$('#dpPaterno').val('');
+		$('#dpMaterno').val('');
+		$('#dpSexo').val('');
+		$('#dpDiaNac').val('');
+		$('#dpMesNac').val('');
+		$('#dpAnioNac').val('');
+		$('#dpEstado').val('');
+		$('#cCurp').val('');
+		$('#elSelloDigital').val('');
+		$('#fdFirmaDigital').val('');
+		$('#folioDigital').val('');
+		$('#drEstado').val('');
+		$('#drMunicipio').val('');
+		$('#drOficialia').val('');
+		$('#drAnio').val('');
+		$('#drActa').val('');
+		$('#userCaptcha').val('');
+		$('input[name=cirterioSelector]').prop(
+				'checked', false);
+	};
+
+	limpiarCampos();
+	$("#tipoSeleccion").show();
+
+	$('input[name=cirterioBusqueda]')
+			.click(
+					function() {
+						var criterio = $('input:radio[name=cirterioBusqueda]:checked').val();
+
+						$('#dpSelector').removeClass("active");
+						$('#curpSelector10').removeClass("active");
+						$('#curpSelector18').removeClass("active");
+						$('#cdSelector').removeClass("active");
+						$('#sdSelector').removeClass("active");
+						$('#folioSelector').removeClass("active");
+						$('#drSelector').removeClass("active");
+
+						if (criterio == "Datos Personales") {
+							$('#dpSelector').addClass("active");
+							$('#comboActo').prop( "disabled", false );
+						} else if (criterio == "CURP10") {
+							$('#curpSelector10').addClass("active");
+							$('#comboActo').prop( "disabled", false );
+						} else if (criterio == "CURP18") {
+							$('#curpSelector18').addClass("active");
+							$('#comboActo').prop( "disabled", false );
+						} else if (criterio == "Cadena Digital") {
+							$('#cdSelector').addClass("active");
+							mostrarPanelBusquedaPor();
+						} else if (criterio == "Sello Digital") {
+							$('#sdSelector').addClass("active");
+							$('#comboActo').prop( "disabled", false );
+						} else if (criterio == "Folio") {
+							$('#folioSelector').addClass("active");							
+							mostrarPanelBusquedaPor();
+						} else if (criterio == "Datos Registrales"){
+							$('#drSelector').addClass("active");
+							$('#comboActo').prop( "disabled", false );
+						}
+					});
+
+	var numActo = 0;
+
+	$("select#comboActo").change(function() {
+		numActo = $(this).children(":selected").val();
+		mostrarPanelBusquedaPor();
+	});
+
+	function mostrarPanelBusquedaPor(){
+        var criterio = $('input:radio[name=cirterioBusqueda]:checked').val();
+
+        $("#Criterios").hide();
+        $("#tipoSeleccion").hide();
+        $('#comboActo').prop( "disabled", true );
+
+        if (criterio == "Datos Personales") {
+               $('#buscarDPs').show();
+        } else if (criterio == "CURP10") {
+               $('#buscarCURP10').show();
+        } else if (criterio == "CURP18") {
+               $('#buscarCURP18').show();
+        } else if (criterio == "Cadena Digital") {
+               $('#buscarCadena').show();
+        } else if (criterio == "Sello Digital") {
+               $('#buscarSello').show();
+        } else if (criterio == "Folio") {
+               $('#buscarFolio').show();
+        } else if (criterio == "Datos Registrales") {
+               $('#buscarDRs').show();
+        }
+  }
+
+
+	var arregloActos = undefined;
+	var index = 0;
+
+	invocarWsDatosPersonales = function() {
+		var token = $('input[name="tokenDPN"]').val();
+
+		tipo = "naDatos";
+		$.get('ConsultaInfoServlet', {
+			nombre : $('input[id="dpNombre"]').val().trim(),
+			paterno : $('input[id="dpPaterno"]').val().trim(),
+			materno : $('input[id="dpMaterno"]').val().trim(),
+			fechaNacimiento : $('select[id="dpDiaNac"]').val().trim()
+					+ "/" + $('select[id="dpMesNac"]').val().trim()
+					+ "/" + $('select[id="dpAnioNac"]').val().trim(),
+			sexo : $("input[name='dpSexo']:checked").val(),
+			estado : $('select[id="dpEstado"]').val().trim(),
+			tipo : "naDatos",
+			numActo : numActo,
+			entidadRegistro : $('#dpEstado').val(),
+			token : token
+		}, function(responseText) {
+
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+				window.location='index.jsp';
+			}
+			else if(typeof responseText ==='object'){
+				var arreglo =  [ '2',
+							     $('input[id="dpNombre"]').val().trim(),
+							     $('input[id="dpPaterno"]').val().trim(),
+							     $('input[id="dpMaterno"]').val().trim(),
+							     ($('select[id="dpDiaNac"]').val() + "/"
+											+ $('select[id="dpMesNac"]').val()
+											+ "/" + $('select[id="dpAnioNac"]')	.val()),
+											$("input[name='dpSexo']:checked").val(),
+											$('select[id="dpEstado"]').val().trim()
+							  ];
+
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		// Creando spinner
+		$(
+				'<div id ="modal" style="position:fixed;top:0;left:0;display:block; background-color:#fff; modal: true;"></div>')
+				.appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+
+	invocarWsCurp10 = function() {
+		var elCurp = $('input[name="cCurp10"]').val().trim();
+		var token = $('input[name="tokenCURPN"]').val();
+
+		tipo = 'naCurp';
+		$.get('ConsultaInfoServlet', {
+			cCurp : elCurp,
+			tipo : 'naCurp',
+			numActo : numActo,
+			token : token
+		}, function(responseText) {
+			var tipo = typeof responseText;
+
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+					window.location='index.jsp';
+			}
+			else if(typeof responseText ==='object'){
+				var arreglo = ['1',elCurp];
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		// Creando spinner
+		$('<div id ="modal" style="modal: true; position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6;"></div>').appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+
+	invocarWsCurp18 = function() {
+		var elCurp = $('input[name="cCurp18"]').val().trim();
+		var token = $('input[name="tokenCURPN"]').val();
+
+		tipo = 'naCurp';
+		$.get('ConsultaInfoServlet', {
+			cCurp : elCurp,
+			tipo : 'naCurp',
+			numActo : numActo,
+			token : token
+		}, function(responseText) {
+			var tipo = typeof responseText;
+
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+					window.location='index.jsp';
+			}
+			else if(typeof responseText ==='object'){
+				var arreglo = ['1',elCurp];
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		// Creando spinner
+		$('<div id ="modal" style="modal: true; position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6;"></div>').appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+	
+	invocarWsCD = function() {
+		var laFirma = $('input[name="fdFirmaDigital"]').val().trim();
+		var token = $('input[name="tokenCADENAN"]').val();
+		numActo = laFirma.substring(0,1);
+
+		$.get('ConsultaInfoServlet', {
+			llave : laFirma,
+			tipo : 'naFD',
+			numActo : laFirma.substring(0,1),
+			token : token
+		}, function(responseText) {
+
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+				window.location='index.jsp';
+			}
+			else if(typeof responseText==='object'){
+				var arreglo = ['3',laFirma];
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		$(
+				'<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6;modal: true;"></div>')
+				.appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+
+	invocarWsSello = function() {
+		var elSello = $('#elSelloDigital').val().trim();
+		var token = $('input[name="tokenSELLON"]').val();
+
+		tipo = 'naSello';
+		$.get('ConsultaInfoServlet', {
+			sello : elSello,
+			tipo : 'naSello',
+			numActo : numActo,
+			token : token
+		}, function(responseText) {
+
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+				window.location='index.jsp';
+			}
+			else if(typeof responseText==='object'){
+				var arreglo = ['4',elSello];
+				llenarListaCoincidencias(responseText ,arreglo);
+			}
+		});
+		$(
+				'<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6; modal: true;"></div>')
+				.appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+
+	invocarWsFolio = function() {
+		var elFolio = $('input[name="folioDigital"]').val().trim();
+		var token = $('input[name="tokenFOLION"]').val();
+		$.get('ConsultaInfoServlet', {
+			folio : elFolio,
+			tipo : 'naFolio',
+			numActo : 99,
+			token : token
+		}, function(responseText) {
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+				window.location='index.jsp';
+			}
+			else if(typeof responseText==='object'){
+				var arreglo = ['5',elFolio];
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		$(
+				'<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6;modal: true;"></div>')
+				.appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+
+
+	/* EAVS llamado servlet a BD */
+	
+	/*invocarWsFolioPublica = function() {
+		var elFolio = $('input[name="folioDigital"]').val().trim();
+		var token = $('input[name="tokenFOLION"]').val();
+
+        var postData = {
+			folio : elFolio,
+			tipo : 'naFolioPublica',
+			numActo : 99,
+			token : token,
+            captchaId: captcha.getCaptchaId(),
+			captchaCode : captcha.getUserEnteredCaptchaCode()
+        };
+		
+		$.get('ConsultaInfoServlet', postData, function(responseText) {
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+				window.location='ConsultaFolio.jsp';
+			}
+			else if(typeof responseText==='object'){
+				var arreglo = ['5',elFolio];
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		$(
+				'<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6;modal: true;"></div>')
+				.appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};*/
+	
+	
+	
+	invocarInsBD = function() {
+		var reg = /[A-Z]{4}\d{6}[HMX][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9][0-9]/;
+		var elCurp = $('input[name="cCurp"]').val().trim();
+
+		if(elCurp.search(reg)) {
+			var hrefAcuse = new String(contextPath)
+			+ '/index.jsp';
+			window.location=hrefAcuse;
+		}else{
+			var hrefAcuse = new String(contextPath)
+			+'/SincBDServlet?CurpN='+elCurp
+			+ '&tipo=naCurp';
+			window.location = hrefAcuse;
+			spinner.stop();
+			$('#modal').remove();			
+		}
+		
+	};
+	
+	invocaDeleteCURP = function() {
+		var hrefAcuse = new String(contextPath)
+			+'/PadresBDServlet';
+		window.location = hrefAcuse;
+		spinner.stop();
+		$('#modal').remove();
+		
+	};
+	
+	invocarReviveC = function() {
+		var reg = /[A-Z]{4}\d{6}[HMX][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z0-9][0-9]/;
+		var curp = $('input[name="cCurp"]').val().trim();
+		if(elCurp.search(reg)) {
+			var hrefAcuse = new String(contextPath)
+			+ '/index.jsp';
+			window.location=hrefAcuse;
+		}else{
+			var hrefAcuse = new String(contextPath)
+			+'/ReviveCBDServlet?Clave='+curp;
+			window.location = hrefAcuse;
+			spinner.stop();
+			$('#modal').remove();
+		}
+		
+	};
+	
+	invocarAmbosConyuges = function() {
+		var token = $('input[name="tokenN"]').val();
+		numActo = 3;
+		$.get('ConsultaInfoServlet', {
+			nombre1 : $('input[id="nombre1"]').val().trim(),
+			paterno1 : $('input[id="primerApellido1"]').val().trim(),
+			materno1 : $('input[id="segundoApellido1"]').val().trim(),
+			nombre2 : $('input[id="nombre2"]').val().trim(),
+			paterno2 : $('input[id="primerApellido2"]').val().trim(),
+			materno2 : $('input[id="segundoApellido2"]').val().trim(),
+			tipo : "maAmbos",
+			numActo : numActo,
+			token : token
+		}, function(responseText) {
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+				window.location='index.jsp';
+			}
+			else if(typeof responseText ==='object'){
+				var arreglo =  [ '6',
+							     $('input[id="nombre1"]').val().trim(),
+							     $('input[id="primerApellido1"]').val().trim(),
+							     $('input[id="segundoApellido1"]').val().trim(),
+							     $('input[id="nombre2"]').val().trim(),
+							     $('input[id="primerApellido2"]').val().trim(),
+							     $('input[id="segundoApellido2"]').val().trim(),
+							  ];
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		// Creando spinner
+		$('<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6;modal: true;"></div>')
+			.appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+	
+	invocarPorNombreDifunto = function() {
+
+		var token = $('input[name="tokenN"]').val();
+		numActo = 2;
+		$.get('ConsultaInfoServlet', {
+			nombre : $('input[id="nombre"]').val().trim(),
+			paterno : $('input[id="primerApellido"]').val().trim(),
+			materno : $('input[id="segundoApellido"]').val().trim(),
+			fechaDefuncion : $('select[id="DiaDef"]').val().trim()
+					+ "/" + $('select[id="MesDef"]').val().trim()
+					+ "/" + $('select[id="AnioDef"]').val().trim(),
+			estado : $('select[id="dpEstado"]').val().trim(),
+			tipo : "defNombre",
+			numActo : numActo,
+			token : token
+		}, function(responseText) {
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+				window.location='index.jsp';
+			}
+			else if(typeof responseText ==='object'){
+				var arreglo =  [ '7',
+							     $('input[id="nombre"]').val().trim(),
+							     $('input[id="primerApellido"]').val().trim(),
+							     $('input[id="segundoApellido"]').val().trim(),
+							     ($('select[id="DiaDef"]').val() + "/"
+											+ $('select[id="MesDef"]').val()
+											+ "/" + $('select[id="AnioDef"]')	.val()),
+							     $('select[id="dpEstado"]').val().trim(),
+							  ];
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		// Creando spinner
+		$('<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6;modal: true;"></div>')
+			.appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+	
+	invocarWsDatosRegistrales = function() {
+		var token = $('input[name="tokenDRN"]').val();
+
+		tipo = "naDatosRegistro";
+		$.get('ConsultaInfoServlet', {
+			estado : $('select[id="drEstado"]').val().trim(),
+			municipio : $('select[id="drMunicipio"]').val().trim(),
+			oficialia : $('select[id="drOficialia"]').val().trim(),
+			anio : $('select[id="drAnio"]').val().trim(),
+			acta : $('input[id="drActa"]').val().trim(),
+			tipo : "naDatosRegistro",
+			numActo : numActo,
+			entidadRegistro : $('#drEstado').val(),
+			token : token
+		}, function(responseText) {
+
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+				window.location='index.jsp';
+			}
+			else if(typeof responseText ==='object'){
+				var arreglo =  [ '8',
+				                 $('select[id="drEstado"]').val().trim(),
+				                 $('select[id="drMunicipio"]').val().trim(),
+				                 $('select[id="drOficialia"]').val().trim(),
+				                 $('select[id="drAnio"]').val().trim(),
+							     $('input[id="drActa"]').val().trim()
+							  ];
+
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		// Creando spinner
+		$(
+				'<div id ="modal" style="position:fixed;top:0;left:0;display:block; background-color:#fff; modal: true;"></div>')
+				.appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+	
+	/* EAVS llamado servlet a BD fin */
+	
+	llenarListaCoincidencias = function(obj , guia) {
+		if (obj.error != "01" || obj.error != 1
+				|| obj.error == undefined) {
+			spinner.stop();
+			$('#Criterios').hide();
+			$('#dialog-message').show();
+			$('#ErrDesc').empty();
+			$('#ErrDesc').append(obj.msgError);
+			
+			if(guia[0]== 3){
+				$('#EstatusMov').append(obj.msgWarning);
+			}
+
+			if(obj.error==="02" || obj.error===2){
+				$('#no_existencia').click( function(){invocarConstancia(numActo, obj , guia , false , obj.folio);}); //AQUI
+				$('#no_existencia').show();
+				$('#closeDialog').click( function(){$('#dialog-message').hide();});
+				$('#closeDialogAmbos').click( function(){$('#dialog-message').hide();regreso();});
+			}
+
+			if(obj.error==="08" || obj.error===8){
+				$('#no_existencia').click( function(){invocarConstancia(numActo, obj , guia , false , obj.folio);}); //AQUI
+				$('#closeDialog').click( function(){$('#dialog-message').hide();});
+			}
+			
+			if(obj.error==="11" || obj.error===11){
+				$('#closeDialog').click( function(){$('#dialog-message').hide();});
+			}
+			
+			if(obj.error==="03" || obj.error===3 || obj.error==="10" || obj.error===10){
+				$('#closeDialog').click( function(){$('#dialog-message').hide();});
+			}
+			
+			return;
+		}
+		$('#Criterios').hide();
+
+		if(obj.nacimientos != null)	{ numActo = 1; }
+		if(obj.defunciones != null)	{ numActo = 2; }
+		if(obj.matrimonios != null)	{ numActo = 3; }
+		if(obj.divorcios != null)	{ numActo = 4; }
+		if(obj.reconocimientos != null)	{ numActo = 5; }
+		if(obj.adopciones != null)	{ numActo = 6; }
+		
+		arregloActos = numActo == 1 || numActo == 7 ? obj.nacimientos
+				: (numActo == 2 || numActo == 8 ? obj.defunciones
+						: (numActo == 3 || numActo == 9 ? obj.matrimonios
+								: (numActo == 4 || numActo == 10 ? obj.divorcios
+										: (numActo == 5 || numActo == 11 ? obj.reconocimientos
+												: (numActo == 6 || numActo == 12 ? obj.adopciones
+														: null)))));
+		if (arregloActos.length > 1) {
+			generarListadoResultados(arregloActos,numActo,guia);
+		} else {
+			generarFormato(arregloActos[0], numActo,guia);
+			limpiarCampos();
+		}
+	};
+
+	generarParametrosBotonActa = function(guia){
+    	$(document).on("click",'[id^=acta]',function() {
+    		$('<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6; modal: true;"></div>')
+    			.appendTo('body');
+    		spinner.spin($('#modal')[0]);
+
+    		var id = $(this).attr("id");
+    		index = id.replace("acta", "");
+    		generarFormato(arregloActos[index],	numActo , guia);
+    	});
+	};
+
+	invocarListadoCentera = function(laCadena) {
+		$.get('Centera', {
+			cadena : laCadena,
+			peticion : 'listado'
+		}, function(clips) {
+			$('#pdfContainer').empty();
+
+			if (typeof clips !== 'undefined' || clips !== ""
+					|| clips !== "null" || clips.length > 0) {
+				for (i in clips) {
+					num = parseInt(i+1);
+					previstaClip(clips[i], num);
+				}
+				$( "#pdfContainer" ).css( "z-index", "8" );
+			}
+		});
+		spinner.stop();
+		$('#modal').remove();
+	};
+
+	verificaListadoCentera = function(laCadena) {
+		$('#pdfContainer').empty();
+		$.get('Centera', {
+			cadena : laCadena,
+			peticion : 'verifica'
+		}, function(existe) {
+			if (existe=="true") {
+				$('#pdfContainer').append(
+						'<button class="btn btn-big btn-default" type="button" tabindex="1" id="mostrarImagenes">'
+						+'Mostrar imagenes <span class="glyphicon glyphicon-zoom-in"></span>' 
+						+'<input type="hidden" value="'+laCadena+'" id="cadenaCentera"/>'
+					+'</button>'	
+				);
+				$('#mostrarImagenes').click(function(){
+					$('#pdfContainer').append('<br/><br/><img src="'+location+'/images/procesando.gif" />');
+					
+					
+					invocarListadoCentera($('#cadenaCentera').val());
+				});
+
+				$( "#pdfContainer" ).css( "z-index", "8" );
+			}
+		});
+		spinner.stop();
+		$('#modal').remove();
+	};
+
+	
+	invocarCenteraConsecutivo = function(imgId) {
+		var loc = new String(contextPath) + '/Centera?imgId=' + imgId + '&peticion=consecutivo';
+		
+		$.ajax({
+			  type: "POST",
+			  url: loc,
+			  responseType : 'arraybuffer'
+			  ,success: function(data){
+				  var file = new Blob([data], {type: 'application/pdf'});
+				  var fileURL = URL.createObjectURL(file);			      
+				  var iframe = 
+					  '<object type="application/pdf" data="'+fileURL+'" style="width:100%; height:900px;">'
+					  + 'alt : <a href="'
+					  +fileURL
+					  +'">acta.pdf</a>'
+					  +'</object>';
+				
+		        $.createModal({
+		            title:'Vista previa',
+		            message: iframe,
+		            closeButton:true,
+		            scrollable:false
+		        });		        
+			  }
+		});
+	};
+
+	generarListadoResultados = function(array, numActo , guia) {
+		$('#coincidencias').empty();
+
+		for (i = 0; i < array.length; i++) {
+			var acto = array[i];
+			if (acto.notasMarginales == "OT_NOTAS") {
+				anotaciones = "Sin anotaciones marginales";
+			}
+			var toAppend = undefined;
+
+			if (numActo == 1 || numActo == 7) {
+				toAppend = coincidenciasNacimientoTemplate(	acto, i , guia);
+			} else if (numActo == 2) {
+				toAppend = coincidenciasDefuncionTemplate(acto,	i,guia);
+			} else if (numActo == 3) {
+				toAppend = coincidenciasMatrimonioTemplate(	acto, i ,guia);
+			} else if (numActo == 4) {
+				toAppend = coincidenciasDivorcioTemplate(acto,i,guia);
+			} else if (numActo == 5) {
+				toAppend = coincidenciasReconocimientoTemplate(acto, i,guia);
+			} else if (numActo == 6) {
+				toAppend = coincidenciasAdopcionTemplate(acto,i, guia);
+			}
+
+			$('#coincidencias').append(toAppend);
+		}
+		$('#coincidencias').append("</table>");
+		$('#coincidencias').show();
+
+		// detener spinner
+		spinner.stop();
+		$('#modal').remove();
+	};
+
+	generarFormato = function(actoAMostrar, numeroActo ,  guia) {
+		$('#coincidencias').empty();
+		var rowTitle = '<div class="panel-heading text-center"><h2 class="panel-title">REGISTRO</h2></div>';
+		var original = JSON.parse(JSON.stringify(actoAMostrar));
+		var acto = validarPropiedades(JSON.parse(JSON.stringify(actoAMostrar)));
+		var na = parseInt(numeroActo);
+		var certificacion = "Se expide el presente extracto del acto registral "
+				+ " de "
+				+ (na == 1 ? 'Nacimiento'
+						: (na == 2 ? 'Defunci&oacute;n'
+								: (na == 3 ? 'Matrimonio'
+										: (na == 4 ? 'Divorcio'
+												: (na == 5 ? 'Reconocimiento'
+														: (na == 6 ? 'Adopci&oacute;n'
+																: ' '))))))
+				+ " que fue inscrito por el Registro Civil de ";
+
+		if (acto.sexo === "M") {
+			acto.sexo = "HOMBRE";
+		} else if (acto.sexo === "F") {
+			acto.sexo = "MUJER";
+		} else if (acto.sexo === "X") {
+			acto.sexo = "NO BINARIO";
+		}
+		
+		
+		var tablaNotas ;
+
+		if (acto.notasMarginales === "OT_NOTAS"
+				|| acto.notasMarginales === ""
+				|| acto.notasMarginales === "null"
+				|| acto.notasMarginales === undefined
+				|| acto.notasMarginales === vacio) {
+			acto.notasMarginales = "Sin anotaciones marginales";
+			
+			tablaNotas = "<tr> <td colspan='10' >" +
+			"<table width='100%' border='1' style='border-collapse: collapse;'>"
+			+ "<tr class='sombreadoDatosActa' align='left'><th> Anotaciones Marginales</th> <th> Certificaci&oacute;n</th></tr>"
+			+ "<tr><td width='40%'>" + acto.notasMarginales	+ "</td>"
+			+ " <td width='60%' class='espaciado' style='padding: 11px;'> "	+ acto.codigoCivil +"<br\><br\><br\></td>"
+			+ "</tr>"
+			+ "</table>"
+			+ "</td></tr>";
+			
+		}else{
+			tablaNotas = "<tr> <td colspan='10' >" +
+			"<table width='100%' border='1' style='border-collapse: collapse;'>"
+			+ "<tr class='sombreadoDatosActa' align='left'><th> Anotaciones Marginales</th> <th> Certificaci&oacute;n</th></tr>"
+			+ "<tr><td width='40%'>" + popupNotas(acto.notasMarginales , "notasNacimiento",100)	+ "</td>"
+			+ " <td width='60%' class='espaciado' style='padding: 11px;'> "	+ acto.codigoCivil +"<br\><br\><br\></td>"
+			+ "</tr>"
+			+ "</table>"
+			+ "</td></tr>";
+		}
+
+		var tablaFormato ;
+		var botonesNacimiento ;
+		var botonesDefuncion ;
+		var botonesGenerico ;
+		
+		var usuVal = parseInt(userApp);
+		
+		if(usuVal == 11){
+			botonesNacimiento = "<button type='button' class='btn btn-primary' id='descargaXML'>Descargar XML <span class='glyphicon glyphicon-file'></span></button>"
+				+ "&nbsp;" 
+				+ "<button type='button' class='btn btn-primary' id='descargaConsulta'>Descargar Consulta <span class='glyphicon glyphicon-file'></span></button>";
+			
+			if(guia[0]==7){
+				botonesDefuncion = "<button type='button' class='btn btn-primary' id='descargaXML'>Descargar XML <span class='glyphicon glyphicon-file'></span></button>" 
+					+ "&nbsp;" 
+					+ "<button type='button' class='btn btn-primary' id='descargaConsulta'>Descargar Consulta <span class='glyphicon glyphicon-file'></span></button>"
+					+ "&nbsp;"
+					+ "<button type='button' class='btn btn-primary' id='closeAmbos'>Cerrar<span class='glyphicon glyphicon-file'></span></button>"
+					+ "</tr></table>";
+			}else{
+				botonesDefuncion = "<button type='button' class='btn btn-primary' id='descargaXML'>Descargar XML <span class='glyphicon glyphicon-file'></span></button>" 
+				+ "&nbsp;" 
+				+ "<button type='button' class='btn btn-primary' id='descargaConsulta'>Descargar Consulta <span class='glyphicon glyphicon-file'></span></button>"
+				+ "</tr></table>";
+			}
+			
+			if(guia[0]==6){
+				botonesGenerico = "<button type='button' class='btn btn-primary' id='descargaXML'>Descargar XML <span class='glyphicon glyphicon-file'></span></button>" 
+					+ "&nbsp;" 
+					+ "<button type='button' class='btn btn-primary' id='descargaConsulta'>Descargar Consulta <span class='glyphicon glyphicon-file'></span></button>"
+					+ "&nbsp;"
+					+ "<button type='button' class='btn btn-primary' id='closeAmbos'>Cerrar<span class='glyphicon glyphicon-file'></span></button>"
+					+ "</tr></table>";
+			}else{
+				botonesGenerico = "<button type='button' class='btn btn-primary' id='descargaXML'>Descargar XML <span class='glyphicon glyphicon-file'></span></button>" 
+					+ "&nbsp;" 
+					+ "<button type='button' class='btn btn-primary' id='descargaConsulta'>Descargar Consulta <span class='glyphicon glyphicon-file'></span></button>"
+					+ "</tr></table>";
+			}
+				
+		}else if(usuVal == 8){
+			botonesNacimiento = "<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>"
+			+ "&nbsp;"
+			+ "<button type='button' class='btn btn-primary' id='registraPeticion'>Sincronizar</button>"
+			+ "</tr></table></div>";
+			
+			if(guia[0]==7){
+				botonesDefuncion = "<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>" 
+				+ "&nbsp;"
+				+ "<button type='button' class='btn btn-primary' id='buscaPadres'>Consulta Padres</button>"
+				+ "&nbsp;"
+				+ "<button type='button' class='btn btn-primary' id='closeAmbos'>Cerrar<span class='glyphicon glyphicon-file'></span></button>"
+				+ "</tr></table>";
+			}else{
+				botonesDefuncion = "<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>" 
+					+ "&nbsp;"
+					+ "<button type='button' class='btn btn-primary' id='buscaPadres'>Consulta Padres</button>"
+					+ "</tr></table>";
+			}
+			
+			if(guia[0]==6){
+				botonesGenerico = "<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>"
+					+ "&nbsp;"
+					+ "<button type='button' class='btn btn-primary' id='closeAmbos'>Cerrar<span class='glyphicon glyphicon-file'></span></button>"
+					+ "</tr></table>";
+			}else{
+				botonesGenerico = "<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>"
+					+ "</tr></table>";
+			}
+			
+		}else if(usuVal == 9){
+			botonesNacimiento = "</tr></table></div>";
+			
+			if(guia[0]==7){
+				botonesDefuncion = "<button type='button' class='btn btn-primary' id='closeAmbos'>Cerrar<span class='glyphicon glyphicon-file'></span></button>" 
+					+ "</tr></table>";
+			}else{
+				botonesDefuncion = "</tr></table>";
+			}
+			
+			if(guia[0]==6){
+				botonesGenerico = "<button type='button' class='btn btn-primary' id='closeAmbos'>Cerrar<span class='glyphicon glyphicon-file'></span></button>"
+					+ "</tr></table>";
+			}else{
+				botonesGenerico = "</tr></table>";
+			}
+			
+		}else{
+			botonesNacimiento = 	"<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>"
+ 				+ "</tr></table></div>";
+			
+			if(guia[0]==7){
+				botonesDefuncion =  	"<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>"
+					+ "&nbsp;"
+					+ "<button type='button' class='btn btn-primary' id='closeAmbos'>Cerrar<span class='glyphicon glyphicon-file'></span></button>"
+					+ "</tr></table>";
+			}else{
+				botonesDefuncion =  	"<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>" 
+				+ "</tr></table>";
+			}
+
+			if(guia[0]==6){
+				botonesGenerico = "<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>"
+					+ "&nbsp;"
+					+ "<button type='button' class='btn btn-primary' id='closeAmbos'>Cerrar<span class='glyphicon glyphicon-file'></span></button>"
+					+ "</tr></table>";
+			}else{
+				botonesGenerico = "<button type='button' class='btn btn-primary' id='mostrarAcuse'>Mostrar Acuse <span class='glyphicon glyphicon-file'></span></button>"
+					+ "</tr></table>";
+			}
+
+		}
+		
+		var tipoPersona = acto.tipoPersona;
+		var tablaTranscripcion;
+		var lugReg;
+		var lugNac;
+		var lugNac_2;
+		var tablaPadreDatosNac;
+		var tablaMadreDatosNac;
+		var tablaLugNacElCony;
+		var tablaLugNacLaCony;
+		//alert('entrando');
+		if(acto.transcripcion === "SIN TRANSCRIPCION"
+				|| acto.transcripcion === ""
+				|| acto.transcripcion === "null"
+				|| acto.transcripcion === undefined
+				|| acto.transcripcion === vacio){
+			acto.transcripcion = "Sin Transcripci&oacute;n";
+			tablaTranscripcion = "<tr> <td colspan='10' >"
+				+ "<br/><table width='100%' border='1' style='border-collapse: collapse;'>"
+				+ "<tr class='sombreadoDatosActa' align='left'><th> Transcripci&oacute;n </th></tr>"
+				+ "<tr><td width='40%'>" + acto.transcripcion + "</td>"
+				+ "</tr>"
+				+ "</table>"
+				+ "</td></tr>";
+		}else if(tipoPersona == "I"){
+			tablaTranscripcion = "<tr> <td colspan='10' >"
+				+ "<table width='100%' border='1' style='border-collapse: collapse;'>"
+				+ "<tr class='sombreadoDatosActa' align='left'><th> Transcripci&oacute;n </th></tr>"
+				+ "<tr><td width='40%'>" + popupTranscripcion(acto.transcripcion , "transcripcionNacimiento",230) + "</td>"
+				+ "</tr>"
+				+ "</table>"
+				+ "</td></tr>";
+		}
+		
+		if(acto.estadoReg == "39"){
+			//alert('entrando39');
+			if(acto.transcripcion != "Sin Transcripci&oacute;n"){
+				//alert('entrandoCT');
+				var transArray = acto.transcripcion.split('|');
+				tablaTranscripcion = "<tr> <td colspan='10' >"
+					+ "</td></tr>";
+				lugReg= transArray[0];
+				lugNac = transArray[1];
+				
+				if (numeroActo == 1) {
+					if(acto.estadoNac == "39"){
+						lugNac = transArray[1];
+					}else{
+						lugNac = acto.municipioNacNombre+", "+acto.estadoNacNombre;
+					}
+				}
+				
+				if(numeroActo == 3){
+					tablaLugNacElCony = "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+						+ "<td width='100%'>"
+						+ transArray[1]
+						+ " </td>"
+						+ " </tr></table></td></tr>"
+						+ "<tr><td colspan='10'><table width='100%'><tr align='center'><td width='100%'> Lugar de Nacimiento: </td></tr></table></td></tr>";
+
+					tablaLugNacLaCony = "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+						+ "<td width='100%'>"
+						+ transArray[2]
+						+ " </td>"
+						+ " </tr></table></td></tr>"
+						+ "<tr><td colspan='10'><table width='100%'><tr align='center'><td width='100%'> Lugar de Nacimiento: </td></tr></table></td></tr>";
+				}
+				
+			}else{
+				//alert('entrandoST');
+				lugReg= acto.municipioRegNombre+", "+acto.estadoRegNombre;
+				
+				if (numeroActo == 1) {
+					lugNac = acto.localidad+", "+acto.nacionalidadTxt;
+				}
+				
+				if (numeroActo == 3) {
+					
+					tablaLugNacElCony = "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+						+ "<td width='100%'>"
+						+ acto.MAT_LOC_NAC_DEL_CTY+", "+acto.nacionalidadElTxt
+						+ " </td>"
+						+ " </tr></table></td></tr>"
+						+ "<tr><td colspan='10'><table width='100%'><tr align='center'><td width='100%'> Lugar de Nacimiento: </td></tr></table></td></tr>";
+
+					tablaLugNacLaCony = "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+						+ "<td width='100%'>"
+						+ acto.MAT_LOC_NAC_DELA_CTY+", "+acto.nacionalidadEllaTxt
+						+ " </td>"
+						+ " </tr></table></td></tr>"
+						+ "<tr><td colspan='10'><table width='100%'><tr align='center'><td width='100%'> Lugar de Nacimiento: </td></tr></table></td></tr>";
+				}
+			}
+			
+		}else{
+			//alert('entrandoN39');
+			lugReg= acto.municipioRegNombre+", "+acto.estadoRegNombre;
+			if(acto.estadoNac == "39"){
+				lugNac = acto.localidad+", "+acto.paisTxt;
+			}else{
+				lugNac = acto.municipioNacNombre+", "+acto.estadoNacNombre;
+			}
+			//lugNac = acto.paisTxt+", "+acto.estadoNacNombre+", "+acto.municipioNacNombre+", "+acto.localidad;
+			if(acto.estadoReg == "9"){
+				tablaLugNacElCony = "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+				+ "<td width='100%'>"
+				+ acto.MAT_LOC_NAC_DEL_CTY
+				+ " </td>"
+				+ " </tr></table></td></tr>"
+				+ "<tr><td colspan='10'><table width='100%'><tr align='center'><td width='100%'> Lugar de Nacimiento: </td></tr></table></td></tr>";
+
+				tablaLugNacLaCony = "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+				+ "<td width='100%'>"
+				+ acto.MAT_LOC_NAC_DELA_CTY
+				+ " </td>"
+				+ " </tr></table></td></tr>"
+				+ "<tr><td colspan='10'><table width='100%'><tr align='center'><td width='100%'> Lugar de Nacimiento: </td></tr></table></td></tr>";
+			}else{
+				tablaLugNacElCony = "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+				+ "<td width='100%'>"
+				+ acto.MUN_COD_NAC_DEL_CTY_DESC+", "+acto.ENT_COD_NAC_DEL_CTY_DESC
+				+ " </td>"
+				+ " </tr></table></td></tr>"
+				+ "<tr><td colspan='10'><table width='100%'><tr align='center'><td width='100%'> Lugar de Nacimiento: </td></tr></table></td></tr>";
+
+				tablaLugNacLaCony = "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+				+ "<td width='100%'>"
+				+ acto.MUN_COD_NAC_DELA_CTY_DESC+", "+acto.ENT_COD_NAC_DELA_CTY_DESC
+				+ " </td>"
+				+ " </tr></table></td></tr>"
+				+ "<tr><td colspan='10'><table width='100%'><tr align='center'><td width='100%'> Lugar de Nacimiento: </td></tr></table></td></tr>";
+			}
+		}
+			
+		if (numeroActo == 1) {
+			
+			if(acto.nombrePrimeraPersona == "DESCONOCIDO"){
+				tablaPadreDatosNac = "<table width='100%' class='lineaActa'>"
+					+ "<tr align='center'> "
+					+ "<td width='30%'> ---------- </td>"
+					+ "<td width='15%'> ---------- </td>"
+					+ "<td width='15%'> ---------- </td>"
+					+ "<td width='15%'> ---------- </td>"
+					+ "<td width='25%'> ---------- </td>"
+					+ "</tr>"
+					+ "</table>";
+			}else{
+				tablaPadreDatosNac = "<table width='100%' class='lineaActa'>"
+					+ "<tr align='center'> "
+					+ "<td width='30%'>" + acto.nombrePrimeraPersona + "</td>"
+					+ "<td width='15%'>" + acto.primerApellidoPrimeraPersona + "</td>"
+					+ "<td width='15%'>" + acto.segundoApellidoPrimeraPersona + "</td>"
+					+ "<td width='15%'>" + acto.nacPadreTxt + "</td>"
+					+ "<td width='25%'>" + acto.curpPADRE + "</td>"
+					+ "</tr>"
+					+ "</table>"; 
+			}
+			
+			if(acto.nombreSegundaPersona == "DESCONOCIDO"){
+				tablaMadreDatosNac = "<table width='100%' class='lineaActa'>" +
+					"<tr align='center'>"
+					+ "<td width='30%'> ---------- </td>"
+					+ "<td width='15%'> ---------- </td>"
+					+ "<td width='15%'> ---------- </td>"
+					+ "<td width='15%'> ---------- </td>"
+					+ "<td width='25%'> ---------- </td>" +
+					"</tr>" +
+					"</table>";
+			}else{
+				tablaMadreDatosNac = "<table width='100%' class='lineaActa'>" +
+				"<tr align='center'>"
+				+ "<td width='30%'>" + acto.nombreSegundaPersona+ "</td>"
+				+ "<td width='15%'>" + acto.primerApellidoSegundaPersona+ "</td>"
+				+ "<td width='15%'>" + acto.segundoApellidoSegundaPersona+ "</td>"
+				+ "<td width='15%'>" + acto.nacMadreTxt	+ "</td>"
+				+ "<td width='25%'>" + acto.curpMADRE + "</td>" +
+				"</tr>" +
+				"</table>";
+			}
+		}
+
+		var tablaMovimiento = "<tr><td><br/></td></tr>" ;
+
+		if(guia[0]== 3 || guia[0]== 2 || guia[0]== 1){
+			if(acto.valorMovim === ""
+				|| acto.valorMovim === "null"
+				|| acto.valorMovim === undefined
+				|| acto.valorMovim === vacio){
+				tablaMovimiento = "<tr><td><br/></td></tr>";
+			}else{
+				if(entidad != 98){
+					tablaMovimiento = "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td colspan='10'>"
+					+ "<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "<tr class='sombreadoDatosActa' align='center'>"
+					+ "<td width='100%'>Fecha y Hora de &Uacute;ltima Actualizaci&oacute;n</td>"
+					+ "</tr>"
+					+ "<tr align='center'>"
+					+ "<td width='100%'>"
+					+ acto.valorMovim
+					+ "</td>"
+					+ "</tr>"
+					+ "</table>"
+					+ "</td></tr>";
+				}
+			}
+		}
+
+		var campoFechaNaciDef;
+		var horaDef;
+		var fechaDefMod;
+		if(numeroActo == 2){
+			if(acto.fechaNacimiento.toUpperCase() === "01/01/1899"){
+				campoFechaNaciDef = "</td><td width='33%'> ---------- </td>";
+			}else{
+				campoFechaNaciDef = "</td><td width='33%'>"
+				+ formatearFechaLarga(acto.fechaNacimiento.toUpperCase())
+				+ "</td>";
+			}
+			
+			horaDef = acto.hora;
+			/*if(acto.transcripcion != "Sin Transcripci&oacute;n"){
+				horaDef = acto.hora;
+			}else{
+				horaDef = formateoHora(acto.hora, acto.minutos);
+			}*/
+			
+			if(acto.fechaDefuncionTxt.toUpperCase() === "31/12/1898"){
+				fechaDefMod = "<td width='30%'> ---------- </td><td width='15%'>";
+			}else{
+				fechaDefMod = "<td width='30%'>"
+				+ formatearFechaLarga(acto.fechaDefuncionTxt.toUpperCase())
+				+ "</td><td width='15%'>";
+			}
+			
+
+			
+		}
+		var tipoPersonaMat;
+		
+		if(acto.MAT_TIPO_PERSONA === "C"){
+			tipoPersonaMat = "<tr align='center'> <td width='40%' class='tituloActa'> Acta de Concubinato </td> ";
+		}else{
+			tipoPersonaMat = "<tr align='center'> <td width='40%' class='tituloActa'> Acta de Matrimonio </td> ";
+		}
+		
+		if (numeroActo == 1) {
+			tablaFormato = "<div lass='panel-body'>"
+					+ "<table width='100%' class='hoja'>"
+						+ "<tr align='center'>"
+							+ "<td width='20%'> <table width='100%'><tr><td class='escudoActa' ></td></tr></table></td> "
+							+ "<td colspan='8'> "
+								+ "<table width='100%'>"
+									+ "<tr align='center'> <td width='50%'></td> <td width='50%' class='sombreadoActa'>Clave &Uacute;nica de Registro de Poblaci&oacute;n</td> "
+									+ "<tr align='center'> <td width='50%' class='tituloActa'>Estados Unidos Mexicanos </td>"
+										+ "<td width='50%' class='datosActa'>" + acto.curp + "<br/><br/> </td >"
+									+ "</tr> "
+									+ "<tr align='center'> <td style='width=50%;align:center' class='tituloActa2'> Extracto de </td>"
+									+ "<td width='50%' class='sombreadoActa'>Certificado de  Nacimiento de SSA</td></tr>"
+									+ "<tr align='center'> <td width='50%' class='tituloActa'> Acta de Nacimiento</td> "
+										+ "<td width='50%' class='datosActa'>" + acto.ssa + " <br/><br/></td>"
+									+ "</tr>"
+									+ "<tr align='center'><td class='sombreadoActa' colspan='2'>Lugar de Registro</td></tr>"
+									+ "<tr align='center'><td class='datosActa' colspan='2'>"	+ lugReg + "<br/><br/><br/> </td>"
+									+ "</tr>"
+								+ "</table>"
+							+"</td>"
+						+ "</tr> "
+						+ "<tr align='center' > <td colspan='10' class='sombreadoDatosActa'>Datos de la Persona Registrada</td></tr>"
+						+ "<tr class='datosActa'> "
+							+ "<td colspan='10' ><br/><br/><br/> "
+								+ "<table width='100%' class='lineaActa'>"
+									+"<tr align='center'>"
+										+ "<td width='33%'>" + acto.nombre + "</td>"
+										+ "<td width='33%'>" + acto.primerApellido + "</td>"
+										+ "<td width='33%'>" + acto.segundoApellido	+ "</td>"
+									+ "</tr>"
+								+"</table>"
+							+"</td>"
+						+ "</tr>"
+						+ "<tr> <td colspan='10' > "
+							+ "<table width='100%'>"
+								+ "<tr align='center'> "
+									+ "<td width='33%'> Nombre(s): </td>"
+									+ "<td width='33%'> Primer Apellido:</td>"
+									+ "<td width='33%'>Segundo Apellido:</td> "
+								+ "</tr>"
+							+ "</table>"
+						+ "</td></tr>"
+						+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> "
+							+ "<table width='100%' class='lineaActa'>"
+								+ "<tr align='center'> "
+									+ "<td width='33%'>" + acto.sexo + " </td>"
+									+ "<td width='33%'>" + formatearFechaLarga(acto.fechaNacimiento) + "</td>"
+									+ "<td width='33%'>" + lugNac + "</td>"
+								+ "</tr>"
+							+"</table>"
+						+ "</td></tr>"
+						+ "<tr> <td colspan='10' > "
+							+ "<table width='100%'>"
+								+ "<tr align='center'> <td width='33%'> Sexo: </td>"
+									+ "<td width='33%'> Fecha de Nacimiento:</td>"
+									+ "<td width='33%'>Lugar de Nacimiento: </td>"
+								+ "</tr>"
+							+ "</table>"
+						+ "</td></tr>"
+						+ "<tr><td><br/><br/><br/> </td></tr>"
+						+ "<tr align='center'> <td colspan='10' class='sombreadoDatosActa'>Datos de Filiaci&oacute;n de la Persona Registrada</td></tr>"
+						+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> "
+						+ tablaPadreDatosNac
+						+ "</td></tr>"
+						+ "<tr><td colspan='10'> " +
+							"<table width='100%'>" +
+								"<tr  class='datosRegistrado'> "
+								+ "<td width='5%'></td>"
+								+ "<td width='17%' align='right'> Nombre(s): </td>"
+								+ "<td width='20%' align='right'>Primer A.:</td>"
+								+ "<td width='16%' align='right'>Segundo A.:</td>"
+								+ "<td width='15' align='center'> Nacionalidad:</td>"
+								+ "<td width='25%' align='center'> CURP:</td>" +
+								"</tr>" +
+							"</table>"
+						+ "</td></tr>"
+						+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> "
+						+ tablaMadreDatosNac
+						+ "</td></tr>"
+						+ "<tr ><td colspan='10'> " +
+							"<table width='100%'>" +
+							"<tr class='datosRegistrado'> "
+							+ "<td width='5%'></td>"
+							+ "<td width='17%' align='right'> Nombre(s): </td>"
+							+ "<td width='20%' align='right'>Primer A.:</td>"
+							+ "<td width='16%' align='right'>Segundo A.:</td>"
+							+ "<td width='15' align='center'> Nacionalidad:</td>"
+							+ " <td width='25%' align='center'> CURP:</td>" +
+							"</tr>" +
+							"</table>"
+						+ "</td></tr>"
+						+ "<tr><td><br/><br/><br/></td></tr>"
+						+ tablaNotas
+// Transcripcion inicio
+					+ tablaTranscripcion
+// Transcripcion fin
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td colspan='6'>"
+					+ "	<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "	<tr class='sombreadoDatosActa' align='center'>"
+					+ "		<td width='15%'>Cadena del Acto</td><td width='15%'>Fecha de Registro</td>"
+					+"   </tr>"
+					+"<tr>"
+					+"<td style='text-align: center; padding: 10px;'>" +acto.cadena+ "</td>"
+					+"<td style='text-align: center; padding: 10px;'>" +formatearFechaLarga(acto.fechaRegistro)+ "</td>"
+					+"</tr>"
+					+"</table></td></tr>"
+					+ "<tr><td><br/><br/></td></tr>"
+
+					+ "<tr><td colspan='10'>"
+					+ "<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "<tr class='sombreadoDatosActa' align='center'>"
+					+ "<td width='20%'>Oficial&iacute;a</td>"
+					+ "<td width='20%'>Libro</td>"
+					+ "<td width='20%'>Foja</td>"
+					+ "<td width='20%'>Tomo</td>"
+					+ "<td width='20%'>Acta</td>"
+					+ "</tr>"
+					+ "<tr align='center'>"
+					+ "<td width='20%'>"
+					+ acto.oficialia
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.libro
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.foja
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.tomo
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.noActa
+					+ "</td>"
+					+ "</tr>"
+					+ "</table>"
+					+ "</td></tr>"
+					
+					+ tablaMovimiento
+					
+					+ "</table></td></tr>" // principal acta
+					+ "<tr ><td><br/><br/><br/></td></tr>"
+					+ "<table width='100%'><tr><td colspan=\"\" align=\"right\">"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ botonesNacimiento;
+		} else if (numeroActo == 2) {
+			tablaFormato = "<div>"
+					+ "<table width='100%' class='hoja'>"
+					+ "<tr align='center'>"
+					+ "<td  style='width:20%;'> <table width='100%'><tr><td class='escudoActa' ></td></tr></table></td> "
+					+ "<td colspan='8'> <table width='100%'>"
+					+ "<tr align='center'> <td width='50%'></td> <td width='50%' class='sombreadoActa'>Clave &Uacute;nica de Registro de Poblaci&oacute;n</td> "
+					+ "<tr align='center'> <td width='50%' class='tituloActa'>Estados Unidos Mexicanos </td>"
+					+ "<td width='50%' class='datosActa'>"
+					+ acto.curp
+					+ "<br/><br/> </td ></tr> "
+					+ "<tr align='center'> <td style='width=50%;align:center' class='tituloActa2'> Extracto de </td>"
+					+ "<td width='50%' class='sombreadoActa'>Certificado de acto de SSA</td></tr>"
+					+ "<tr align='center'> <td width='50%' class='tituloActa'> Acta de Defunci&oacute;n</td> "
+					+ "<td width='50%' class='datosActa'>"
+					+ acto.ssa
+					+ " <br/><br/></td> </tr>"
+					+ "<tr align='center'><td width='50%'></td> <td class='sombreadoActa'>Entidad de Registro</td></tr>"
+					+ "<tr align='center'><td width='50%'></td> <td class='datosActa'>"
+					+ acto.estadoRegNombre
+					+ " </td></tr>"
+					+ "</tr><tr></br></tr>"
+					+ "<tr align='center'><td colspan='2'><table width='100%' style='border-spacing: 0px; border-color: black;' border='1px'>"
+					+ "<tr align='center' class='sombreadoActa'><td width='25%'>Oficial&iacute;a</td><td width='15%'>Libro</td><td width='20%'>Acta</td><td width='40%'>Fecha</td></tr>"
+					+ "<tr align='center' class='datosActa'><td width='25%'>"
+					+ acto.oficialia
+					+ "</td><td width='15%'>"
+					+ acto.libro
+					+ "</td><td width='20%'>"
+					+ acto.noActa
+					+ "</td><td style='width:40%; font-size: 10px; padding:5px;'>"
+					+ formatearFechaLarga(acto.fechaRegistro.toUpperCase())
+					+ "</td></tr>"
+					+ "</table><br/><br/><br/></td></tr>"
+					+ "</table> </td>"
+					+ "</tr> "
+					+ "<tr align='center' > <td colspan='10' class='sombreadoDatosActa'>Datos de la Persona Fallecida</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'>"
+					+ "<td width='33%'>"
+					+ acto.nombre
+					+ "</td><td width='33%'>"
+					+ acto.primerApellido
+					+ "</td><td width='33%'>"
+					+ acto.segundoApellido
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%' ><tr align='center'> <td width='33%'> Nombre(s): </td><td width='33%'> "
+					+ "Primer Apellido:</td><td width='33%'>Segundo Apellido:</td> </tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='33%'>"
+					+ acto.sexo
+					+ " </td><td width='33%'> "
+					+ acto.estadoCivilTxt
+					+ campoFechaNaciDef
+					+ " </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%'><tr align='center'> <td width='33%'> Sexo: </td>"
+					+ "<td width='33%'> Estado Civil:</td><td width='33%'>Fecha de Nacimiento: </td></tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'>"
+					+ "<td width='33%'>"
+					+ lugNac //+ acto.municipioNacNombre//+", "+ acto.estadoNacNombre
+					+ "</td><td width='33%'>"
+					+ acto.estadoRegNacNombre //+ acto.estadoNacNombre 
+					+ "</td><td width='33%'>"
+					+ acto.nacionalidadTxt
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%'><tr align='center'> <td width='33%'>Lugar de Nacimiento: </td><td width='40%'> "
+					+ "Entidad de Registro de Nacimiento:</td><td width='33%'>Nacionalidad:</td> </tr></table></td></tr>"
+					+ "<tr><td><br/><br/><br/> </td></tr>"
+					+ "<tr align='center'> <td colspan='10' class='sombreadoDatosActa'>Datos de la Defunci&oacute;n de la Persona Fallecida</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ fechaDefMod
+					+ horaDef
+					+ "</td><td width='30%'>"
+					+ acto.lugarDefuncion //+ acto.localidad
+					+ "</td>"
+					+ "<td width='25%'> "
+					+ acto.destinoCadaver
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr><td colspan='10'> <table width='100%'><tr  class='datosRegistrado'> "
+					+ "<td width='30%' align='center'> Fecha: </td><td width='15%' align='center'>Hora:</td>"
+					+ "<td width='30%' align='center'>Lugar:</td><td width='25%' align='center'> Destino del Cad&aacute;ver:</td>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='90%'> "
+					+'<div style="overflow: hidden;"><span>'
+					+popupNotas(acto.causasDefuncion ,"causasDefuncion" ,  80)
+					+ '</span></div>'
+					+ "</td></tr></table></td></tr>"
+					+ "<tr ><td colspan='10'> <table width='100%'><tr  class='datosRegistrado'> "
+					+ "<td width='90%' align='center'> Causas de la Defunci&oacute;n: </td></tr></table></td></tr>"
+					+ "<tr><td><br/><br/><br/></td></tr>"
+					+ "<tr> <td colspan='10' ><table width='100%' border='1'>"
+					+ "<tr class='sombreadoDatosActa' align='left'><th> Anotaciones Marginales</th> <th> Certificaci&oacute;n</th></tr>"
+					+ "<tr> <td width='40%'>"
+					+ popupNotas(acto.notasMarginales ,"notasDefuncion", 100)
+					+ "</td>"
+					+ " <td width='60%' class='espaciado' height=''> "
+					+ certificacion
+					+ " "
+					+ "<strong>"
+					+ acto.estadoRegNombre
+					+ "</strong>. <br\><br\><br\></td></tr>"
+					+ "</table></td></tr>"
+					+ "</table></td></tr>"
+					+ "<tr><td><br/><br/><br/></td></tr>"
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td colspan='6'>"
+					+ "	<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "	<tr class='sombreadoDatosActa' align='center'>"
+					+ "		<td width='15%'>Cadena del Acto</td><td width='15%'>Fecha de Registro</td>"
+					+"   </tr>"
+					+"<tr>"
+					+"<td style='text-align: center; padding: 10px;'>" +acto.cadena+ "</td>"
+					+"<td style='text-align: center; padding: 10px;'>" +formatearFechaLarga(acto.fechaRegistro.toUpperCase())+ "</td>"
+					+"</tr>"
+					+"</table></td></tr>"
+					+ tablaMovimiento
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<table width='100%'><tr><td colspan=\"\" align=\"right\">"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ botonesDefuncion;
+		} else if (numeroActo == 3) {
+			tablaFormato = "<div>"
+					+ "<table width='100%' class='hoja'>"
+					+ "<tr align='center'>"
+					+ "<td > <table width='15%'><tr><td class='escudoActa' ></td></tr></table></td> "
+					+ "<td>"
+					+" <table width='100%'>"
+					+ "<tr align='center'>"
+					+" <td width='40%'></td> <td style='width:60%; text-align:center;padding:5px;' class='sombreadoActa'>Clave &Uacute;nica de Registro de Poblaci&oacute;n</td> "
+					+ "<tr align='center'> <td width='40%' class='tituloActa' style='font-size:small;'>Estados Unidos Mexicanos </td>"
+					+ "<td width='60%'>"
+						+"<table>"
+						+"<tr style='border-top:5px;'>"
+						+"<td class='sombreadoActa' style='font-size:small;'>1er C&Oacute;NYUGE: </td>"
+						+"<td style='font-size:small; padding:5px;'>"
+						+ acto.curpEl
+						+"</td></tr><tr>"
+						+"<td class='sombreadoActa' style='font-size:small;'>2do C&Oacute;NYUGE: </td>"
+						+"<td style='font-size:small;'>"
+						+ acto.curpElla
+						+"</td></tr></table>"
+						+"</tr> "
+					+ "<tr align='center'> <td width='40%' class='tituloActa2'> Extracto de </td>"
+					+ "<td width='60%' class='datosActa'>"
+					+ "<br/><br/> </td ></tr> "
+					//+ "<tr align='center'> <td width='40%' class='tituloActa'> Acta de Matrimonio</td> "
+					+ tipoPersonaMat
+					+ "<td style='width:60%; text-align:center;padding:5px;' class='sombreadoActa'>Lugar de Registro</td></tr>"
+					+ "<tr align='center'><td width='40%'></td> <td class='datosActa' style='width:60%; text-align:center;'>"
+					+ lugReg
+					+ " </td></tr>"
+					+ "<tr align='center'><td width='40%'></td> <td class='sombreadoActa' style='width:60%; text-align:center;padding:5px;'>Fecha de inscripci&oacute;n del Matrimonio </td></tr>"
+					+ "<tr align='center'><td width='40%'></td> <td class='datosActa' style='width:60%; text-align:center;padding:5px;'>"
+					+ formatearFechaLarga(acto.fechaRegistro)
+					+ " </td></tr>"
+					+ "</table>"
+					+ "</td></tr> "
+					+ "<tr align='center' > <td colspan='10' class='sombreadoDatosActa'>Datos de los contrayentes</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'>"
+					+ "<td width='33%'>"
+					+ acto.nombreEl
+					+ "</td><td width='33%'>"
+					+ acto.primerApellidoEl
+					+ "</td><td width='33%'>"
+					+ acto.segundoApellidoEl
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%' ><tr align='center'> <td width='33%'> Nombre(s): </td><td width='33%'> "
+					+ "Primer Apellido:</td><td width='33%'>Segundo Apellido:</td> </tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='33%'>"
+					+ acto.sexoEl
+					+ " </td><td width='33%'> "
+					+ acto.nacionalidadElTxt
+					+ "</td><td width='33%'>"
+					+ acto.edadEl
+					+ "</td>"
+					+ " </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%'><tr align='center'> <td width='33%'> Sexo: </td>"
+					+ "<td width='33%'> Nacionalidad:</td><td width='33%'>EDAD: </td></tr></table></td></tr>"
+					+ tablaLugNacElCony
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'>"
+					+ "<td width='33%'>"
+					+ acto.nombreElla
+					+ "</td><td width='33%'>"
+					+ acto.primerApellidoElla
+					+ "</td><td width='33%'>"
+					+ acto.segundoApellidoElla
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%'><tr align='center'> <td width='33%'> Nombre(s): </td><td width='33%'> "
+					+ "Primer Apellido:</td><td width='33%'>Segundo Apellido:</td> </tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='33%'>"
+					+ acto.sexoElla
+					+ " </td><td width='33%'> "
+					+ acto.nacionalidadEllaTxt
+					+ "</td><td width='33%'>"
+					+ acto.edadElla
+					+ "</td>"
+					+ " </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%' ><tr align='center'> <td width='33%'> Sexo: </td>"
+					+ "<td width='33%'> Nacionalidad:</td><td width='33%'>EDAD: </td></tr></table></td></tr>"
+					+ tablaLugNacLaCony
+					+ "<tr><td><br/><br/><br/> </td></tr>"
+					+ "<tr align='center'> <td colspan='10' class='sombreadoDatosActa'>Datos del acto de matrimonio</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td style='width:30%; font-size: 11px;'>"
+					+ acto.estadoRegNombre
+					+ "</td><td style='width:15%;font-size: 11px;'>"
+					+ acto.municipioRegNombre
+					+ "</td><td width='30%'>"
+					+ formatearFechaLarga(acto.fechaRegistroDate)
+					+ "</td><td style='width:25%;font-size: 11px;'> "
+					+ acto.regimenPatrimonialTxt
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr><td colspan='10'> <table width='100%'><tr  class='datosRegistrado'> "
+					+ "<td width='30%' align='center'> Entidad Federativa: </td><td width='15%' align='center'>Municipio:</td>"
+					+ "<td width='30%' align='center'>Fecha:</td><td width='25%' align='center'> R&eacute;gimen conyugal:</td>"
+					+ "<tr><td><br/><br/><br/></td></tr>"
+					+ "<tr> <td colspan='10' ><table width='100%' border='1'>"
+					+ "<tr class='sombreadoDatosActa' align='left'><th> Anotaciones Marginales</th> <th> Certificaci&oacute;n</th></tr>"
+					+ "<tr> <td width='40%'>"
+					+ popupNotas(acto.notasMarginales , "notasMatrimonio" , 100)
+					+ "</td>"
+					+ " <td width='60%' class='espaciado' height=''> "
+					+ certificacion
+					+ " "
+					+ "<strong>"
+					+ acto.estadoRegNombre
+					+ "</strong>. <br\><br\><br\></td></tr>"
+					+ "</table></td></tr>"
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td colspan='6'>"
+					+ "	<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "	<tr class='sombreadoDatosActa' align='center'>"
+					+ "		<td width='15%'>Cadena del Acto</td><td width='15%'>Fecha de Registro</td>"
+					+"   </tr>"
+					+"<tr>"
+					+"<td style='text-align: center; padding: 10px;'>" +acto.cadena+ "</td>"
+					+"<td style='text-align: center; padding: 10px;'>" +formatearFechaLarga(acto.fechaRegistro)+ "</td>"
+					+"</tr>"
+					+"</table></td></tr>"
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td colspan='10'>"
+					+ "<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "<tr class='sombreadoDatosActa' align='center'>"
+					+ "<td width='20%'>Oficial&iacute;a</td>"
+					+ "<td width='20%'>Libro</td>"
+					+ "<td width='20%'>Foja</td>"
+					+ "<td width='20%'>Tomo</td>"
+					+ "<td width='20%'>Acta</td>"
+					+ "</tr>"
+					+ "<tr align='center'>"
+					+ "<td width='20%'>"
+					+ acto.oficialia
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.libro
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.foja
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.tomo
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.numeroActa
+					+ "</td>"
+					+ "</tr>"
+					+ "</table>"
+					+ "</td></tr>"
+					+ tablaMovimiento
+					+ "</table></td></tr>" // principal acta
+					+ "<tr ><td><br/><br/><br/></td></tr>"
+					+ "<table width='100%'><tr><td colspan=\"\" align=\"right\">"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ botonesGenerico;
+		} else if (numeroActo == 4) {
+			tablaFormato = "<div>"
+					+ "<table width='100%' class='hoja'>"
+					+ "<tr align='center'>"
+					+ "<td > <table width='100%'><tr><td class='escudoActa' ></td></tr></table></td> "
+					+ "<td> <table width='100%'>"
+					+ "<tr align='center'> <td width='40%'></td> <td style='width:60%; text-align:center;padding:5px;' class='sombreadoActa'>Clave &Uacute;nica de Registro de Poblaci&oacute;n</td> "
+					+ "<tr align='center'> <td style='width:40%; font-size:small;' class='tituloActa'>Estados Unidos Mexicanos </td>"
+					+ "<td width='60%' class='datosActa'>"
+					+ acto.curpEl
+					+ "<br/><br/> </td ></tr> "
+					+ "<tr align='center'> <td width='40%' class='tituloActa2'> Extracto de </td>"
+					+ "<td style='width:60%; text-align:center;padding:5px;' class='datosActa'>"
+					+ acto.curpElla
+					+ "<br/><br/> </td ></tr> "
+					+ "<tr align='center'> <td width='40%' class='tituloActa'> Acta de Divorcio</td> "
+					+ "<td style='width:60%; text-align:center;padding:5px;' class='sombreadoActa'>Entidad de Registro</td></tr>"
+					+ "<tr align='center'><td width='40%'></td> <td class='datosActa'>"
+					+ acto.estadoRegNombre
+					+ " </td></tr>"
+					+ "<tr align='center'><td width='40%'></td> <td class='sombreadoActa' style='width:60%; text-align:center;padding:5px;'>Fecha de inscripci&oacute;n </td></tr>"
+					+ "<tr align='center'><td width='40%'></td> <td class='datosActa' style='width:60%; text-align:center;padding:5px;'>"
+					+ formatearFechaLarga(acto.fechaRegistro)
+					+ " </td></tr>"
+					+ "</table> </td>"
+					+ "</tr> "
+					+ "<tr align='center' > <td colspan='10' class='sombreadoDatosActa'>Datos de los divorciados</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'>"
+					+ "<td width='33%'>"
+					+ acto.nombreEl
+					+ "</td><td width='33%'>"
+					+ acto.primerApellidoEl
+					+ "</td><td width='33%'>"
+					+ acto.segundoApellidoEl
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%' ><tr align='center'> <td width='33%'> Nombre(s): </td><td width='33%'> "
+					+ "Primer Apellido:</td><td width='33%'>Segundo Apellido:</td> </tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='33%'>"
+					+ acto.sexoEl
+					+ " </td><td width='33%'> "
+					+ acto.nacionalidadElTxt
+					+ "</td><td width='33%'>"
+					+ acto.curpEl
+					+ "</td>"
+					+ " </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%'><tr align='center'> <td width='33%'> Sexo: </td>"
+					+ "<td width='33%'> Nacionalidad:</td><td width='33%'>CURP: </td></tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'>"
+					+ "<td width='33%'>"
+					+ acto.nombreElla
+					+ "</td><td width='33%'>"
+					+ acto.primerApellidoElla
+					+ "</td><td width='33%'>"
+					+ acto.segundoApellidoElla
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%' ><tr align='center'> <td width='33%'> Nombre(s): </td><td width='33%'> "
+					+ "Primer Apellido:</td><td width='33%'>Segundo Apellido:</td> </tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='33%'>"
+					+ acto.sexoElla
+					+ " </td><td width='33%'> "
+					+ acto.nacionalidadEllaTxt
+					+ "</td><td width='33%'>"
+					+ acto.curpElla
+					+ "</td>"
+					+ " </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%' ><tr align='center'> <td width='33%'> Sexo: </td>"
+					+ "<td width='33%'> Nacionalidad:</td><td width='33%'>CURP: </td></tr></table></td></tr>"
+					+ "<tr align='center'> <td colspan='10' class='sombreadoDatosActa'>Datos del acto de divorcio</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='30%'>"
+					+ acto.estadoRegNombre
+					+ "</td><td width='15%'>"
+					+ acto.municipioRegNombre
+					+ "</td><td width='30%'>"
+					//+ formatearFechaLarga(acto.fechaRegistro)
+					+ formatearFechaLarga(acto.fechaResolucion)
+					+ "</td><td width='25%'> "
+					+ '<div style="border-width:0; overflow: hidden; height:50px; position: relative; left: 10px;">'
+					+ popupNotas(acto.divResolucionAdmva ,"resolucionAdmva" , 31)
+					+ '</div>'
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr><td colspan='10'> <table width='100%'><tr  class='datosRegistrado'> "
+					+ "<td width='30%' align='center'> Entidad Federativa: </td><td width='15%' align='center'>Municipio:</td>"
+					+ "<td width='30%' align='center'>Fecha:</td><td width='25%' align='center'> V&iacute;a de la disoluci&oacute;n:</td>"
+					+ "<tr><td><br/><br/><br/></td></tr>"
+					+ "<tr> <td colspan='10' ><table width='100%' border='1'>"
+					+ "<tr class='sombreadoDatosActa' align='left'><th> Anotaciones Marginales</th> <th> Certificaci&oacute;n</th></tr>"
+					+ "<tr> <td width='40%'>"
+					+ popupNotas(acto.notasMarginales ,"notasDivorcio" , 100)
+					+ "</td>"
+					+ " <td width='60%' class='espaciado' height=''> "
+					+ certificacion
+					+ " "
+					+ "<strong>"
+					+ acto.estadoRegNombre
+					+ "</strong>. <br\><br\><br\></td></tr>"
+					+ "</table></td></tr>"
+
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td colspan='6'>"
+					+ "	<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "	<tr class='sombreadoDatosActa' align='center'>"
+					+ "		<td width='15%'>Cadena del Acto</td><td width='15%'>Fecha de Registro</td>"
+					+"   </tr>"
+					+"<tr>"
+					+"<td style='text-align: center; padding: 10px;'>" +acto.cadena+ "</td>"
+					+"<td style='text-align: center; padding: 10px;'>" +formatearFechaLarga(acto.fechaRegistro)+ "</td>"
+					+"</tr>"
+					+"</table></td></tr>"
+					+ "<tr><td><br/><br/></td></tr>"
+
+					+ "<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "<tr class='sombreadoDatosActa' align='center'>"
+					+ "<td width='20%'>Oficial&iacute;a</td>"
+					+ "<td width='20%'>Libro</td>"
+					+ "<td width='20%'>Foja</td>"
+					+ "<td width='20%'>Tomo</td>"
+					+ "<td width='20%'>Acta</td>"
+					+ "</tr>"
+					+ "<tr align='center'>"
+					+ "<td width='20%'>"
+					+ acto.ofiCodigo
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.libro
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.foja
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.tomo
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.numeroActa
+					+ "</td>"
+					+ "</tr>"
+					+ "</table>"
+					+ "</td></tr>"
+					+ tablaMovimiento
+					+ "</table></td></tr>" // principal acta
+					+ "<tr ><td><br/><br/><br/></td></tr>"
+					+ "<table width='100%'><tr><td colspan=\"\" align=\"right\">"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ botonesGenerico;
+		} else if (numeroActo == 5) {
+			tablaFormato = "<div>"
+					+ "<table width='100%' class='hoja'>"
+					+ "<tr align='center'>"
+					+ "<td style='width:20%;'> <table width='100%'><tr><td class='escudoActa' ></td></tr></table></td> "
+					+ "<td colspan='8'> <table width='100%'>"
+					+ "<tr align='center'> <td width='50%'></td> <td width='50%' class='sombreadoActa'>Clave &Uacute;nica de Registro de Poblaci&oacute;n</td> "
+					+ "<tr align='center'> <td width='50%' class='tituloActa'>Estados Unidos Mexicanos </td>"
+					+ "<td width='50%' class='datosActa'>"
+					+ acto.curp
+					+ "<br/><br/> </td ></tr> "
+					+ "<tr align='center'> <td width='50%' class='tituloActa2'> Extracto de </td>"
+					+ "<td width='50%' class='sombreadoActa'>Entidad de Registro</td></tr>"
+					+ "<tr align='center'> <td width='50%' class='tituloActa'> Acta de Reconocimiento</td> "
+					+ "<td width='50%' class='datosActa'>"
+					+ acto.estadoRegNombre
+					+ " <br/><br/></td> </tr>"
+					+ "<tr align='center'><td width='50%'></td> <td class='sombreadoActa'>Fecha de Inscripci\u00f3n del Reconocimiento</td></tr>"
+					+ "<tr align='center'><td width='50%'></td> <td class='datosActa'>"
+					+ formatearFechaLarga(acto.fechaRegistro)
+					+ "<br/><br/><br/> </td></tr>"
+					+ "</table> </td>"
+					+ "</tr> "
+					+ "<tr align='center' > <td colspan='10' class='sombreadoDatosActa'>Datos de la Persona Reconocida</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'>"
+					+ "<td width='33%'>"
+					+ acto.nombre
+					+ "</td><td width='33%'>"
+					+ acto.primerApellido
+					+ "</td><td width='33%'>"
+					+ acto.segundoApellido
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%'><tr align='center'> <td width='33%'> Nombre(s): </td><td width='33%'> "
+					+ "Primer Apellido:</td><td width='33%'>Segundo Apellido:</td> </tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='33%'>"
+					+ acto.sexo
+					+ " </td><td width='33%'> "
+					+ formatearFechaLarga(acto.fechaNacimiento)
+					+ "</td><td width='33%'>"
+					+ lugNac
+					+ "</td>"
+					+ " </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%' ><tr align='center'> <td width='33%'> Sexo: </td>"
+					+ "<td width='33%'> Fecha de Nacimiento:</td><td width='33%'>Lugar de Nacimiento: </td></tr></table></td></tr>"
+					+ "<tr><td><br/><br/><br/> </td></tr>"
+					+ "<tr align='center'> <td colspan='10' class='sombreadoDatosActa'>Datos de la Persona que realiza el Reconocimiento</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='60%'> "
+		    		 + (acto.nombrePrimeraPersona && acto.nombrePrimeraPersona.length>0? acto.nombrePrimeraPersona+' ' : ' ' )
+		    		 + (acto.primerApellidoPrimeraPersona && acto.primerApellidoPrimeraPersona.length>0? acto.primerApellidoPrimeraPersona + ' ': ' ')
+		    		 + (acto.segundoApellidoPrimeraPersona && acto.segundoApellidoPrimeraPersona.length>0? acto.segundoApellidoPrimeraPersona+' ' : ' ')
+					+ "</td>"
+					+ "<td width='15%'> "
+					+ acto.nacionalidadAux1Txt
+					+ "</td> <td width='25%'>"
+					+ acto.curpAux1
+					+ "</td></tr></table></td></tr>"
+					+ "<tr><td colspan='10'> <table width='100%'><tr  class='datosRegistrado'> "
+					+ "<td width='60%' align='center'>Nombre del Reconocedor:</td>"
+					+ "<td width='15%' align='center'> Nacionalidad:</td>"
+					+ "<td width='25%' align='center'> CURP:</td></tr></table></td></tr>"
+					+ "<tr><td><br/> </td></tr>"
+					+ "<tr align='center'> <td colspan='10' class='sombreadoDatosActa'>Datos de la Madre del Reconocido</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='60%' align='center'>"
+					 + (acto.REC_NOMBRE_MADRE_RECDOR && acto.REC_NOMBRE_MADRE_RECDOR.length>0? acto.REC_NOMBRE_MADRE_RECDOR+' ' : ' ' )
+		    		 + (acto.REC_PRI_AP_MADRE_RECDOR && acto.REC_PRI_AP_MADRE_RECDOR.length>0? acto.REC_PRI_AP_MADRE_RECDOR + ' ': ' ')
+		    		 + (acto.REC_SEG_AP_MADRE_RECDOR && acto.REC_SEG_AP_MADRE_RECDOR.length>0? acto.REC_SEG_AP_MADRE_RECDOR+' ' : ' ')
+					+ "</td>"
+					+ "<td width='15%'> "
+					+ acto.nacionalidadAux2Txt
+					+ "</td> <td width='25%'> "
+					+ acto.curpAux2
+					+ "</td></tr></table></td></tr>"
+					+ "<tr ><td colspan='10'> <table width='100%'><tr  class='datosRegistrado'> "
+					+ "<td width='60%' align='center'> Nombre de la Madre:</td>"
+					+ "<td width='15%' align='center'> Nacionalidad:</td>"
+					+ " <td width='25%' align='center'> CURP:</td></tr></table></td></tr>"
+					+ "<tr><td><br/><br/><br/></td></tr>"
+					+ "<tr> <td colspan='10' ><table width='100%' border='1'>"
+					+ "<tr class='sombreadoDatosActa' align='left'><th> Anotaciones Marginales</th> <th> Certificaci&oacute;n</th></tr>"
+					+ "<tr> <td width='40%'>"
+					+ popupNotas(acto.notasMarginales , "notasReconocimiento",  100)
+					+ "</td>"
+					+ " <td width='60%' class='espaciado' height=''> "
+					+ certificacion
+					+ " "
+					+ "<strong>"
+					+ acto.estadoRegNombre
+					+ "</strong>. <br\><br\><br\></td></tr>"
+					+ "</table></td></tr>"
+					+ "<tr ><td><br/><br/><br/></td></tr>"
+
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td colspan='6'>"
+					+ "	<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "	<tr class='sombreadoDatosActa' align='center'>"
+					+ "		<td width='15%'>Cadena del Acto</td><td width='15%'>Fecha de Registro</td>"
+					+"   </tr>"
+					+"<tr>"
+					+"<td style='text-align: center; padding: 10px;'>" +acto.cadena+ "</td>"
+					+"<td style='text-align: center; padding: 10px;'>" +formatearFechaLarga(acto.fechaRegistro)+ "</td>"
+					+"</tr>"
+					+"</table></td></tr>"
+					+ "<tr><td><br/><br/></td></tr>"
+
+					+ "<table width='100%'><tr><td colspan=\"\" align=\"right\">"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "</tr></table>"
+					+ "<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "<tr class='sombreadoDatosActa' align='center'>"
+					+ "<td width='20%'>Oficial&iacute;a</td>"
+					+ "<td width='20%'>Libro</td>"
+					+ "<td width='20%'>Foja</td>"
+					+ "<td width='20%'>Tomo</td>"
+					+ "<td width='20%'>Acta</td>"
+					+ "</tr>"
+					+ "<tr align='center'>"
+					+ "<td width='20%'>"
+					+ acto.oficialia
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.libro
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.foja
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.tomo
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.numeroActa
+					+ "</td>"
+					+ "</tr>"
+					+ "</table>"
+					+ "</td></tr>"
+					+ tablaMovimiento
+					+ "</table></td></tr>" // principal acta
+					+ "<tr ><td><br/><br/><br/></td></tr>"
+					+ "<table width='100%'><tr><td colspan=\"\" align=\"right\">"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ botonesGenerico;
+		} else if (numeroActo == 6) {
+			tablaFormato = "<div>"
+					+ "<table width='100%' class='hoja'>"
+					+ "<tr align='center'>"
+					+ "<td style='width:20%;'> <table width='100%'><tr><td class='escudoActa' ></td></tr></table></td> "
+					+ "<td colspan='8'> <table width='100%'>"
+					+ "<tr align='center'> <td width='50%'></td> <td width='50%' class='sombreadoActa'>Clave &Uacute;nica de Registro de Poblaci&oacute;n</td> "
+					+ "<tr align='center'> <td width='50%' class='tituloActa'>Estados Unidos Mexicanos </td>"
+					+ "<td width='50%' class='datosActa'>"
+					+ acto.curp
+					+ "<br/><br/> </td ></tr> "
+					+ "<tr align='center'> <td width='50%' class='tituloActa2'> Extracto de </td>"
+					+ "<td width='50%' class='sombreadoActa'>Entidad de Registro</td></tr>"
+					+ "<tr align='center'> <td width='50%' class='tituloActa'> Acta de Adopci&oacute;n</td> "
+					+ "<td width='50%' class='datosActa'>"
+					+ acto.estadoRegNombre
+					+ " <br/><br/></td> </tr>"
+					+ "<tr align='center'><td width='50%'></td> <td class='sombreadoActa'>Fecha de Inscripci&oacute;n de la Adopci&oacute;n</td></tr>"
+					+ "<tr align='center'><td width='50%'></td> <td class='datosActa'>"
+					+ formatearFechaLarga(acto.fechaRegistro)
+					+ "<br/><br/><br/> </td></tr>"
+					+ "</table> </td>"
+					+ "</tr> "
+					+ "<tr align='center' > <td colspan='10' class='sombreadoDatosActa'>Datos de la Persona Adoptada</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'>"
+					+ "<td width='33%'>"
+					+ acto.nombre
+					+ "</td><td width='33%'>"
+					+ acto.primerApellido
+					+ "</td><td width='33%'>"
+					+ acto.segundoApellido
+					+ "</td> </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%'><tr align='center'> <td width='33%'> Nombre(s): </td><td width='33%'> "
+					+ "Primer Apellido:</td><td width='33%'>Segundo Apellido:</td> </tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='33%'>"
+					+ acto.sexo
+					+ " </td><td width='33%'> "
+					+ formatearFechaLarga(acto.fechaNacimiento)
+					+ "</td><td width='33%'>"
+					+ acto.MUN_CODIGO_NAC_ADOPTADO_DESC+", "+ acto.estadoNacNombre
+					+ "</td>"
+					+ " </tr></table></td></tr>"
+					+ "<tr> <td colspan='10' > <table width='100%'><tr align='center'> <td width='33%'> Sexo: </td>"
+					+ "<td width='33%'> Fecha de Nacimiento:</td><td width='33%'>Lugar de Nacimiento: </td></tr></table></td></tr>"
+					+ "<tr><td><br/><br/><br/> </td></tr>"
+					+ "<tr align='center'> <td colspan='10' class='sombreadoDatosActa'>Datos de Filiaci&oacute;n de la Persona Adoptada</td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='30%'>"
+					+ acto.nombrePrimeraPersona
+					+ "</td><td width='15%'>"
+					+ acto.primerApellidoPrimeraPersona
+					+ "</td><td width='15%'>"
+					+ acto.segundoApellidoPrimeraPersona
+					+ "</td>"
+					+ "<td width='15%'> "
+					+ acto.nacionalidadAux1Txt
+					+ "</td> <td width='25%'>"
+					+ acto.curpAux1
+					+ "</td></tr></table></td></tr>"
+					+ "<tr><td colspan='10'> <table width='100%'><tr  class='datosRegistrado'> "
+					+ "<td width='5%'></td>"
+					+ "<td width='17%' align='right'> Nombre(s): </td><td width='20%' align='right'>Primer A.:</td>"
+					+ "<td width='16%' align='right'>Segundo A.:</td><td width='15' align='center'> Nacionalidad:</td>"
+					+ "<td width='25%' align='center'> CURP:</td></tr></table></td></tr>"
+					+ "<tr class='datosActa'> <td colspan='10' ><br/><br/><br/> <table width='100%' class='lineaActa'><tr align='center'> "
+					+ "<td width='30%'> "
+					+ acto.nombreSegundaPersona
+					+ "</td><td width='15%'>"
+					+ acto.primerApellidoSegundaPersona
+					+ "</td><td width='15%'>"
+					+ acto.segundoApellidoSegundaPersona
+					+ "</td>"
+					+ "<td width='15%'> "
+					+ acto.nacionalidadAux2Txt
+					+ "</td> <td width='25%'> "
+					+ acto.curpAux2
+					+ "</td></tr></table></td></tr>"
+					+ "<tr ><td colspan='10'> <table width='100%'><tr  class='datosRegistrado'> "
+					+ "<td width='5%'></td>"
+					+ "<td width='17%' align='right'> Nombre(s): </td><td width='20%' align='right'>Primer A.:</td>"
+					+ "<td width='16%' align='right'>Segundo A.:</td><td width='15' align='center'> Nacionalidad:</td>"
+					+ " <td width='25%' align='center'> CURP:</td></tr></table></td></tr>"
+					+ "<tr><td><br/><br/><br/></td></tr>"
+
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td colspan='6'>"
+					+ "	<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "	<tr class='sombreadoDatosActa' align='center'>"
+					+ "		<td>Parte Resolutiva Judicial</td>"
+					+"   </tr>"
+					+"<tr>"
+					+"<td style='text-align: center; padding: 10px;'>"
+					+popupNotas(acto.parteResolutivaJudicial , "prj" , 90)
+					+ "</td>"
+					+"</tr>"
+					+"</table></td></tr>"
+					+ "<tr><td><br/><br/></td></tr>"
+
+					+ "<tr> <td colspan='10' ><table width='100%' border='1'>"
+					+ "<tr class='sombreadoDatosActa' align='left'><th> Anotaciones Marginales</th> <th> Certificaci&oacute;n</th></tr>"
+					+ "<tr><td width='40%'>"
+					+ popupNotas(acto.notasMarginales , "notasAdopcion",  100)
+					+ "</td>"
+					+ " <td width='60%' class='espaciado' height=''> "
+					+ certificacion
+					+ " "
+					+ "<strong>"
+					+ acto.estadoRegNombre
+					+ "</strong>. <br\><br\><br\></td></tr>"
+					+ "</table></td></tr>" // principal acta
+					+ "<tr ><td><br/><br/><br/></td></tr>"
+
+					+ "<tr><td><br/><br/></td></tr>"
+					+ "<tr><td colspan='6'>"
+					+ "	<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "	<tr class='sombreadoDatosActa' align='center'>"
+					+ "		<td width='15%'>Cadena del Acto</td><td width='15%'>Fecha de Registro</td>"
+					+"   </tr>"
+					+"<tr>"
+					+"<td style='text-align: center; padding: 10px;'>" +acto.cadena+ "</td>"
+					+"<td style='text-align: center; padding: 10px;'>" +formatearFechaLarga(acto.fechaRegistro)+ "</td>"
+					+"</tr>"
+					+"</table></td></tr>"
+					+ "<tr><td><br/><br/></td></tr>"
+
+					+ "<table width='100%'><tr><td colspan=\"\" align=\"right\">"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "</tr></table>"
+					+ "<table width='100%' border='1' style='border-collapse: collapse;' >"
+					+ "<tr class='sombreadoDatosActa' align='center'>"
+					+ "<td width='20%'>Oficial&iacute;a</td>"
+					+ "<td width='20%'>Libro</td>"
+					+ "<td width='20%'>Foja</td>"
+					+ "<td width='20%'>Tomo</td>"
+					+ "<td width='20%'>Acta</td>"
+					+ "</tr>"
+					+ "<tr align='center'>"
+					+ "<td width='20%'>"
+					+ acto.oficialia
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.libro
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.foja
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.tomo
+					+ "</td>"
+					+ "<td width='20%'>"
+					+ acto.numeroActa
+					+ "</td>"
+					+ "</tr>"
+					+ "</table>"
+					+ "</td></tr>"
+					+ tablaMovimiento
+					+ "</table></td></tr>" // principal acta
+					+ "<tr ><td><br/><br/><br/></td></tr>"
+					+ "<table width='100%'><tr><td colspan=\"\" align=\"right\">"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ "<colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan>"
+					+ botonesGenerico;
+		} else if (numeroActo == 7) {
+			tablaFormato = coincidenciasInscripcionNacimientoTemplate(acto);
+		}
+		$('#coincidencias').append(rowTitle);
+		$('#coincidencias').append(tablaFormato);
+		$('#coincidencias').show();
+
+		verificaListadoCentera(acto.cadena);
+		agregarBotonDescargaXML(numeroActo, acto);
+		agregarBotonDescargaConsulta(numeroActo, original , guia, true);
+		agregarBotonRegistroEncontrado(numeroActo, original , guia, true);
+		agregarBotonSincronizar(numeroActo, original , guia);
+		agregarBotonPadres(original , guia);
+		agregarBotonCerrar();
+	};
+
+	//template para las previstas del centera
+	previstaClip = function(clip, num){
+		clip.clipId = "clip"+clip.clipId;
+		var template = '<div style="display: table;margin: 0 auto;"><br/><div><span>Click en la imagen para visualizar<span></div><br/>'
+			+'<a href="#" data-toggle="modal" data-target="#lightbox">'
+			+'<img id="{{clipId}}" src="{{base64}}" style="width:350px;height :500px; z-index:8;"/>'
+			+'</a>'
+			+'</div>';
+		$('#pdfContainer').append(Mustache.render(template, clip));
+		
+		var $lightbox = $('#lightbox');
+	    
+	    $('[data-target="#lightbox"]').on('click', function(event) {
+	        var $img = $(this).find('img'), 
+	    
+	        	src = $img.attr('src'),
+	            css = {
+	                'maxWidth': $(window).width() - 100
+	            };
+	    
+	        $lightbox.find('.close').addClass('hidden');
+	        $lightbox.find('img').attr('src', src);
+	        $lightbox.find('img').css(css);
+	        
+	    });
+
+		
+	    $lightbox.on('shown.bs.modal', function (e) {
+	        var $img = $lightbox.find('img');
+	            
+	        $lightbox.find('.modal-dialog').css({'width': $img.width()});
+	        $lightbox.find('.close').removeClass('hidden');
+	    });
+		
+		
+	}
+	
+	formatearFechaLarga = function(sinFormato) {
+		if (sinFormato != null) {
+			if (sinFormato instanceof Date) {
+				return (sinFormato.getDate()
+						+ ' de '
+						+ meses[parseInt(sinFormato.getMonth())]
+						+ ' de ' + sinFormato.getFullYear()).toUpperCase();
+			} else if (sinFormato.month > -1) {
+				return (sinFormato.day + ' de '
+						+ meses[parseInt(sinFormato.month)]
+						+ ' de ' + sinFormato.year).toUpperCase();
+			} else {
+				if (sinFormato === vacio) {
+					return vacio;
+				} else if (sinFormato.length > 15) {
+					return sinFormato.toUpperCase();
+				}
+				return (sinFormato.substring(0, 2)
+						+ ' de '
+						+ meses[parseInt(sinFormato.substring(
+								3, 5))] + ' de '
+						+ sinFormato.substring(6)).toUpperCase();
+			}
+		} else {
+			return vacio;
+		}
+	};
+
+	$(document).on("click", '[id^=volverInicio]', function() {
+		$( "#pdfContainer" ).css( "z-index", "8" );
+		regreso();
+	});
+
+	regreso = function() {
+		window.location.href = new String(contextPath)+ '/app.jsp';
+	};
+
+	regresoF = function() {
+		window.location.href = new String(contextPath)+ '/ConsultaFolio.jsp';
+	};
+	
+	popupNotas = function(notas, id , minLongitud) {
+
+		var divNotas = undefined;
+
+		if(typeof notas==='undefined' || notas===null){
+			divNotas = "<div style='overflow: hidden; height:95%; width:95%;  position: relative; left: 5px; font-size: 11px;'><span>----</span></div>";
+		}
+		else if (notas.length < minLongitud) {
+			divNotas = "<div style='overflow: hidden; height:95%; width:95%;  position: relative; left: 5px; font-size: 11px;'><span>" + notas + "</span></div>";
+		} else {
+			divNotas =  '<table width="100%"><tr><td>';
+			divNotas += '<div style="overflow: hidden; height:95%; width:95%;  position: relative; left: 5px; font-size: 11px;"><span>'+ notas.substring(0, minLongitud)+ '</span></div>';
+			divNotas +='</td></tr><tr><td>';
+			divNotas +='<button type="button" class="btn-xs btn-primary mlr_10 fl_right" data-toggle="modal" data-target="#modalDialog"><span class="glyphicon glyphicon-plus"></span></button>';
+			divNotas +='</td>	</tr></table>';
+		}
+
+		$('#modalTitle').empty();
+		$('#modalTitle').append("Notas");
+
+		$('#modalMessage').empty();
+		$('#modalMessage').append(notas);
+
+		return divNotas;
+	};
+	
+	popupTranscripcion = function(transcripcion, id , minLongitud) {
+
+		var divTrans = undefined;
+
+		if(typeof transcripcion==='undefined' || transcripcion===null){
+			divTrans = "<div style='overflow: hidden; height:95%; width:95%;  position: relative; left: 5px; font-size: 11px;'><span>----</span></div>";
+		}
+		else if (transcripcion.length < minLongitud) {
+			divTrans = "<div style='overflow: hidden; height:95%; width:95%;  position: relative; left: 5px; font-size: 11px;'><span>" + transcripcion + "</span></div>";
+		} else {
+			divTrans =  '<table width="100%"><tr><td>';
+			divTrans += '<div style="overflow: hidden; height:95%; width:95%;  position: relative; left: 5px; font-size: 11px;"><span>'+ transcripcion.substring(0, minLongitud)+ '</span></div>';
+			divTrans +='</td></tr><tr><td>';
+			divTrans +='<button type="button" class="btn-xs btn-primary mlr_10 fl_right" data-toggle="modal" data-target="#modalTrans"><span class="glyphicon glyphicon-plus"></span></button>';
+			divTrans +='</td>	</tr></table>';
+		}
+
+		$('#modalTransTitle').empty();
+		$('#modalTransTitle').append("Transcripci&oacute;n");
+
+		$('#modalTransMessage').empty();
+		$('#modalTransMessage').append(transcripcion);
+
+		return divTrans;
+	};
+
+
+	invocarConstancia = function(numeroActo, datos , guia , encontrado , folio) {
+		var criteriosSeleccionados = JSON.stringify(datos).split("#").join("");
+		var guiaJson = JSON.stringify(guia);
+		var hrefAcuse = new String(contextPath)
+			+'/UtilServlet?seleccion=ACUSE_ENCONTRADO'
+			+ '&criteriosSeleccionados='+criteriosSeleccionados
+			+ '&encontrado='+encontrado
+			+ '&numeroActo='+numeroActo
+			+ '&guia='+guiaJson
+			+ '&folio='+folio
+			+ '&tipoPDF=Constancia';
+		
+		$.ajax({
+			  type: "GET",
+			  url: hrefAcuse,
+			  responseType : 'arraybuffer'
+			  ,success: function(data){
+				  var file = new Blob([data], {type: 'application/pdf'});
+				  var fileURL = URL.createObjectURL(file);			      
+				  var iframe= "<object type='application/pdf' data='"+hrefAcuse+"' style='width:100%; height:600px;'>" 
+				  				+"<embed type='application/pdf' src='"+fileURL+"' style='width:100%; height:600px;' />"
+				  				+"</object>";
+
+					$.createModal({
+						title:'Vista previa',
+						message: iframe,
+						closeButton:true,
+						scrollable:false
+					});	
+				  
+			  }
+		});
+
+      	spinner.stop();
+		$('#modal').remove();
+	};
+
+	agregarBotonRegistroEncontrado = function(numeroActo , datos , guia,  encontrado){
+		$(document).on("click",'[id^=mostrarAcuse]',function() {
+			$('<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6; modal: true;"></div>')
+				.appendTo('body');
+			spinner.spin($('#modal')[0]);
+			invocarConstancia(numeroActo , datos ,guia , true , datos.folio);
+		});
+	};
+
+	agregarBotonDescargaXML = function(numeroActo , datos){
+		$(document).on("click",'[id^=descargaXML]',function() {
+			$('<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6; modal: true;"></div>')
+				.appendTo('body');
+			descargarArchivo(generarXml(numeroActo , datos), 'consulta.xml');
+		});
+	};
+
+
+	agregarBotonCerrar = function(){
+		$(document).on("click",'[id^=closeAmbos]',function() {
+			regreso();
+		});
+	};
+	
+	function generarXml(numeroActo , datos) {
+	    var texto = [];
+		var lugReg;
+		var lugNac;
+		var f = new Date();
+		var lugNacElCony;
+		var lugNacLaCony;
+
+		if(datos.estadoReg == "39"){
+			if(datos.transcripcion != "Sin Transcripci&oacute;n"){
+				var transArray = datos.transcripcion.split('|');
+				lugReg= transArray[0];
+				if (numeroActo == 1) {
+					if(datos.estadoNac == "39"){
+						lugNac = transArray[1];
+					}else{
+						lugNac = datos.municipioNacNombre+", "+datos.estadoNacNombre;
+					}
+				}
+				
+				if(numeroActo == 3){
+					lugNacElCony = transArray[1];
+					lugNacLaCony = transArray[2];
+				}
+			}else{
+				lugReg= datos.municipioRegNombre+", "+datos.estadoRegNombre;
+				if (numeroActo == 1) {
+					lugNac = datos.localidad+", "+datos.nacionalidadTxt;
+				}
+				
+				if (numeroActo == 3) {
+					
+					lugNacElCony = datos.MAT_LOC_NAC_DEL_CTY+", "+datos.nacionalidadElTxt;
+					lugNacLaCony = datos.MAT_LOC_NAC_DELA_CTY+", "+datos.nacionalidadEllaTxt;
+				}
+			}
+		}else{
+			lugReg= datos.municipioRegNombre+", "+datos.estadoRegNombre;
+			if(datos.estadoNac == "39"){
+				lugNac = datos.localidad+", "+datos.paisTxt;
+			}else{
+				lugNac = datos.municipioNacNombre+", "+datos.estadoNacNombre;
+			}
+			
+			lugNacElCony = datos.MAT_LOC_NAC_DEL_CTY+", "+datos.nacionalidadElTxt;
+			lugNacLaCony = datos.MAT_LOC_NAC_DELA_CTY+", "+datos.nacionalidadEllaTxt;
+			
+		}
+
+		if (numeroActo == 1) {
+			texto.push('<nacimiento>\n');
+			texto.push('\t<datosDocumento>\n');
+			texto.push('\t\t<oficialia>');
+			texto.push(escaparXML(datos.oficialia));
+			texto.push('</oficialia>\n');
+			texto.push('\t\t<libro>');
+			texto.push(escaparXML(datos.libro));
+			texto.push('</libro>\n');
+			texto.push('\t\t<foja>');
+			texto.push(escaparXML(datos.foja));
+			texto.push('</foja>\n');
+			texto.push('\t\t<tomo>');
+			texto.push(escaparXML(datos.tomo));
+			texto.push('</tomo>\n');
+			texto.push('\t\t<numeroActa>');
+			texto.push(escaparXML(datos.noActa));
+			texto.push('</numeroActa>\n');
+			texto.push('\t</datosDocumento>\n');
+			
+			texto.push('\t<datosComunes>\n');
+			texto.push('\t\t<fechaRegistro>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaRegistro)));
+			texto.push('</fechaRegistro>\n');
+			texto.push('\t\t<lugarRegistro>');
+			texto.push(escaparXML(lugReg));
+			texto.push('</lugarRegistro>\n');
+			texto.push('\t</datosComunes>\n');
+			
+			texto.push('\t<curp>');
+			texto.push(escaparXML(datos.curp));
+			texto.push('</curp>\n');
+			texto.push('\t<identificadorElectronico>');
+			texto.push(escaparXML(datos.identElectr));
+			texto.push('</identificadorElectronico>\n');
+			texto.push('\t<cadena>');
+			texto.push(escaparXML(datos.cadena));
+			texto.push('</cadena>\n');
+			texto.push('\t<ssa>');
+			texto.push(escaparXML(datos.ssa));
+			texto.push('</ssa>\n');	
+		
+			texto.push('\t<datosPersonalesRegistrado>\n');
+			texto.push('\t\t<apellidoPaterno>');
+			texto.push(escaparXML(datos.primerApellido));
+			texto.push('</apellidoPaterno>\n');
+			texto.push('\t\t<apellidoMaterno>');
+			texto.push(escaparXML(datos.segundoApellido));
+			texto.push('</apellidoMaterno>\n');
+			texto.push('\t\t<nombres>');
+			texto.push(escaparXML(datos.nombre));
+			texto.push('</nombres>\n');
+			texto.push('\t\t<sexo>');
+			texto.push(escaparXML(datos.sexo));
+			texto.push('</sexo>\n');
+			texto.push('\t\t<fechaNacimiento>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaNacimiento)));
+			texto.push('</fechaNacimiento>\n');
+			texto.push('\t\t<lugarNacimiento>');
+			texto.push(escaparXML(lugNac));
+			texto.push('</lugarNacimiento>\n');
+			texto.push('\t</datosPersonalesRegistrado>\n');
+			
+			if(datos.nombrePrimeraPersona == "DESCONOCIDO"){
+				texto.push('\t<datosPersonalesPadre>\n');
+				texto.push('\t\t<apellidoPaterno>');
+				texto.push('----------');
+				texto.push('</apellidoPaterno>\n');
+				texto.push('\t\t<apellidoMaterno>');
+				texto.push('----------');
+				texto.push('</apellidoMaterno>\n');
+				texto.push('\t\t<nombres>');
+				texto.push('----------');
+				texto.push('</nombres>\n');
+				texto.push('\t\t<nacionalidad>');
+				texto.push('----------');
+				texto.push('</nacionalidad>\n');
+				texto.push('\t\t<curp>');
+				texto.push('----------');
+				texto.push('</curp>\n');
+				texto.push('\t</datosPersonalesPadre>\n');
+			}else{
+				texto.push('\t<datosPersonalesPadre>\n');
+				texto.push('\t\t<apellidoPaterno>');
+				texto.push(escaparXML(datos.primerApellidoPrimeraPersona));
+				texto.push('</apellidoPaterno>\n');
+				texto.push('\t\t<apellidoMaterno>');
+				texto.push(escaparXML(datos.segundoApellidoPrimeraPersona));
+				texto.push('</apellidoMaterno>\n');
+				texto.push('\t\t<nombres>');
+				texto.push(escaparXML(datos.nombrePrimeraPersona));
+				texto.push('</nombres>\n');
+				texto.push('\t\t<nacionalidad>');
+				texto.push(escaparXML(datos.nacPadreTxt));
+				texto.push('</nacionalidad>\n');
+				texto.push('\t\t<curp>');
+				texto.push(escaparXML(datos.curpPADRE));
+				texto.push('</curp>\n');
+				texto.push('\t</datosPersonalesPadre>\n');
+			}
+
+			if(datos.nombreSegundaPersona == "DESCONOCIDO"){
+				texto.push('\t<datosPersonalesMadre>\n');
+				texto.push('\t\t<apellidoPaterno>');
+				texto.push('----------');
+				texto.push('</apellidoPaterno>\n');
+				texto.push('\t\t<apellidoMaterno>');
+				texto.push('----------');
+				texto.push('</apellidoMaterno>\n');
+				texto.push('\t\t<nombres>');
+				texto.push('----------');
+				texto.push('</nombres>\n');
+				texto.push('\t\t<nacionalidad>');
+				texto.push('----------');
+				texto.push('</nacionalidad>\n');
+				texto.push('\t\t<curp>');
+				texto.push('----------');
+				texto.push('</curp>\n');
+				texto.push('\t</datosPersonalesMadre>\n');
+			}else{
+				texto.push('\t<datosPersonalesMadre>\n');
+				texto.push('\t\t<apellidoPaterno>');
+				texto.push(escaparXML(datos.primerApellidoSegundaPersona));
+				texto.push('</apellidoPaterno>\n');
+				texto.push('\t\t<apellidoMaterno>');
+				texto.push(escaparXML(datos.segundoApellidoSegundaPersona));
+				texto.push('</apellidoMaterno>\n');
+				texto.push('\t\t<nombres>');
+				texto.push(escaparXML(datos.nombreSegundaPersona));
+				texto.push('</nombres>\n');
+				texto.push('\t\t<nacionalidad>');
+				texto.push(escaparXML(datos.nacMadreTxt));
+				texto.push('</nacionalidad>\n');
+				texto.push('\t\t<curp>');
+				texto.push(escaparXML(datos.curpMADRE));
+				texto.push('</curp>\n');
+				texto.push('\t</datosPersonalesMadre>\n');
+			}
+			texto.push('\t<usuario>');
+			texto.push(escaparXML(userName));
+			texto.push('</usuario>\n');
+			texto.push('\t<fechaHora>');
+			texto.push(escaparXML(f.getDate()+"/"+(f.getMonth() +1)+"/"+f.getFullYear()+" "+f.getHours()+":"+f.getMinutes()+":"+f.getSeconds()));
+			texto.push('</fechaHora>\n');
+			texto.push('</nacimiento>');
+		} else if (numeroActo == 2) {
+			//Defuncion
+			var campoFechaNaciDef;
+			var horaDef;
+			
+			if(datos.fechaNacimiento.toUpperCase() === "01/01/1899"){
+				campoFechaNaciDef = "----------";
+			}else{
+				campoFechaNaciDef = formatearFechaLarga(datos.fechaNacimiento);
+			}
+			
+			if(datos.transcripcion != "Sin Transcripci&oacute;n"){
+				horaDef = datos.hora;
+			}else{
+				horaDef = formateoHora(datos.hora, datos.minutos);
+			}
+			
+			texto.push('<defuncion>\n');
+			texto.push('\t<datosDocumento>\n');
+			texto.push('\t\t<oficialia>');
+			texto.push(escaparXML(datos.oficialia));
+			texto.push('</oficialia>\n');
+			texto.push('\t\t<libro>');
+			texto.push(escaparXML(datos.libro));
+			texto.push('</libro>\n');
+			texto.push('\t\t<numeroActa>');
+			texto.push(escaparXML(datos.noActa));
+			texto.push('</numeroActa>\n');
+			texto.push('\t</datosDocumento>\n');
+			
+			texto.push('\t<datosComunes>\n');
+			texto.push('\t\t<fechaRegistro>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaRegistro)));
+			texto.push('</fechaRegistro>\n');
+			texto.push('\t\t<lugarRegistro>');
+			texto.push(escaparXML(datos.estadoRegNombre));
+			texto.push('</lugarRegistro>\n');
+			texto.push('\t</datosComunes>\n');
+			
+			texto.push('\t<curp>');
+			texto.push(escaparXML(datos.curp));
+			texto.push('</curp>\n');
+			texto.push('\t<identificadorElectronico>');
+			texto.push(escaparXML(datos.identElectr));
+			texto.push('</identificadorElectronico>\n');
+			texto.push('\t<cadena>');
+			texto.push(escaparXML(datos.cadena));
+			texto.push('</cadena>\n');
+			texto.push('\t<ssa>');
+			texto.push(escaparXML(datos.ssa));
+			texto.push('</ssa>\n');	
+			
+			texto.push('\t<datosPersonaFallecida>\n');
+			texto.push('\t\t<apellidoPaterno>');
+			texto.push(escaparXML(datos.primerApellido));
+			texto.push('</apellidoPaterno>\n');
+			texto.push('\t\t<apellidoMaterno>');
+			texto.push(escaparXML(datos.segundoApellido));
+			texto.push('</apellidoMaterno>\n');
+			texto.push('\t\t<nombres>');
+			texto.push(escaparXML(datos.nombre));
+			texto.push('</nombres>\n');
+			texto.push('\t\t<sexo>');
+			texto.push(escaparXML(datos.sexo));
+			texto.push('</sexo>\n');
+			texto.push('\t\t<fechaNacimiento>');
+			texto.push(escaparXML(campoFechaNaciDef));
+			texto.push('</fechaNacimiento>\n');
+			texto.push('\t\t<lugarNacimiento>');
+			texto.push(escaparXML(datos.municipioNacNombre+", "+ datos.estadoNacNombre));
+			texto.push('</lugarNacimiento>\n');
+			texto.push('\t\t<estadoCivil>');
+			texto.push(escaparXML(datos.estadoCivilTxt));
+			texto.push('</estadoCivil>\n');
+			texto.push('\t\t<nacionalidad>');
+			texto.push(escaparXML(datos.nacionalidadTxt));
+			texto.push('</nacionalidad>\n');
+			texto.push('\t</datosPersonaFallecida>\n');
+			
+			texto.push('\t<datosDeLaDefuncion>\n');
+			texto.push('\t\t<fechaDefuncion>');
+			texto.push(escaparXML(datos.fechaDefuncionTxt));
+			texto.push('</fechaDefuncion>\n');
+			texto.push('\t\t<hora>');
+			texto.push(escaparXML(horaDef));
+			texto.push('</hora>\n');
+			texto.push('\t\t<localidad>');
+			texto.push(escaparXML(datos.localidad));
+			texto.push('</localidad>\n');
+			texto.push('\t\t<destinoCadaver>');
+			texto.push(escaparXML(datos.destinoCadaver));
+			texto.push('</destinoCadaver>\n');
+			texto.push('\t\t<causasDefuncion>');
+			texto.push(escaparXML(datos.causasDefuncion));
+			texto.push('</causasDefuncion>\n');
+			texto.push('\t</datosDeLaDefuncion>\n');
+			
+			texto.push('\t<usuario>');
+			texto.push(escaparXML(userName));
+			texto.push('</usuario>\n');
+			texto.push('\t<fechaHora>');
+			texto.push(escaparXML(f.getDate()+"/"+(f.getMonth() +1)+"/"+f.getFullYear()+" "+f.getHours()+":"+f.getMinutes()+":"+f.getSeconds()));
+			texto.push('</fechaHora>\n');
+			texto.push('</defuncion>');
+		} else if (numeroActo == 3) {
+			//Matrimonio
+			texto.push('<matrimonio>\n');
+			texto.push('\t<datosDocumento>\n');
+			texto.push('\t\t<oficialia>');
+			texto.push(escaparXML(datos.oficialia));
+			texto.push('</oficialia>\n');
+			texto.push('\t\t<libro>');
+			texto.push(escaparXML(datos.libro));
+			texto.push('</libro>\n');
+			texto.push('\t\t<foja>');
+			texto.push(escaparXML(datos.foja));
+			texto.push('</foja>\n');
+			texto.push('\t\t<tomo>');
+			texto.push(escaparXML(datos.tomo));
+			texto.push('</tomo>\n');
+			texto.push('\t\t<numeroActa>');
+			texto.push(escaparXML(datos.numeroActa));
+			texto.push('</numeroActa>\n');
+			texto.push('\t</datosDocumento>\n');
+			
+			texto.push('\t<datosComunes>\n');
+			texto.push('\t\t<fechaRegistro>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaRegistro)));
+			texto.push('</fechaRegistro>\n');
+			texto.push('\t\t<lugarRegistro>');
+			texto.push(escaparXML(lugReg));
+			texto.push('</lugarRegistro>\n');
+			texto.push('\t</datosComunes>\n');
+			
+			texto.push('\t<curpPrimerConyuge>');
+			texto.push(escaparXML(datos.curpEl));
+			texto.push('</curpPrimerConyuge>\n');
+			texto.push('\t<curpSegundoConyuge>');
+			texto.push(escaparXML(datos.curpElla));
+			texto.push('</curpSegundoConyuge>\n');
+			texto.push('\t<identificadorElectronico>');
+			texto.push(escaparXML(datos.identElectr));
+			texto.push('</identificadorElectronico>\n');
+			texto.push('\t<cadena>');
+			texto.push(escaparXML(datos.cadena));
+			texto.push('</cadena>\n');
+
+			
+			texto.push('\t<datosConyuges>\n');
+			texto.push('\t\t<apellidoPaternoPrimerConyuge>');
+			texto.push(escaparXML(datos.primerApellidoEl));
+			texto.push('</apellidoPaternoPrimerConyuge>\n');
+			texto.push('\t\t<apellidoMaternoPrimerConyuge>');
+			texto.push(escaparXML(datos.segundoApellidoEl));
+			texto.push('</apellidoMaternoPrimerConyuge>\n');
+			texto.push('\t\t<nombresPrimerConyuge>');
+			texto.push(escaparXML(datos.nombreEl));
+			texto.push('</nombresPrimerConyuge>\n');
+			texto.push('\t\t<sexoPrimerConyuge>');
+			texto.push(escaparXML(datos.sexoEl));
+			texto.push('</sexoPrimerConyuge>\n');
+			texto.push('\t\t<edadPrimerConyuge>');
+			texto.push(datos.edadEl);
+			texto.push('</edadPrimerConyuge>\n');
+			texto.push('\t\t<lugarNacimientoPrimerConyuge>');
+			texto.push(escaparXML(lugNacElCony));
+			texto.push('</lugarNacimientoPrimerConyuge>\n');
+			texto.push('\t\t<nacionalidadPrimerConyuge>');
+			texto.push(escaparXML(datos.nacionalidadElTxt));
+			texto.push('</nacionalidadPrimerConyuge>\n');
+			
+			texto.push('\t\t<apellidoPaternoSegundoConyuge>');
+			texto.push(escaparXML(datos.primerApellidoElla));
+			texto.push('</apellidoPaternoSegundoConyuge>\n');
+			texto.push('\t\t<apellidoMaternoSegundoConyuge>');
+			texto.push(escaparXML(datos.segundoApellidoElla));
+			texto.push('</apellidoMaternoSegundoConyuge>\n');
+			texto.push('\t\t<nombresSegundoConyuge>');
+			texto.push(escaparXML(datos.nombreElla));
+			texto.push('</nombresSegundoConyuge>\n');
+			texto.push('\t\t<sexoSegundoConyuge>');
+			texto.push(escaparXML(datos.sexoElla));
+			texto.push('</sexoSegundoConyuge>\n');
+			texto.push('\t\t<edadSegundoConyuge>');
+			texto.push(datos.edadElla);
+			texto.push('</edadSegundoConyuge>\n');
+			texto.push('\t\t<lugarNacimientoSegundoConyuge>');
+			texto.push(escaparXML(lugNacLaCony));
+			texto.push('</lugarNacimientoSegundoConyuge>\n');
+			texto.push('\t\t<nacionalidadSegundoConyuge>');
+			texto.push(escaparXML(datos.nacionalidadEllaTxt));
+			texto.push('</nacionalidadSegundoConyuge>\n');
+			texto.push('\t</datosConyuges>\n');
+			
+			texto.push('\t<datosDelMatrimonio>\n');
+			texto.push('\t\t<entidadFederativa>');
+			texto.push(escaparXML(datos.estadoRegNombre));
+			texto.push('</entidadFederativa>\n');
+			texto.push('\t\t<municipio>');
+			texto.push(escaparXML(datos.municipioRegNombre));
+			texto.push('</municipio>\n');
+			texto.push('\t\t<fechaRegistro>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaRegistro)));
+			texto.push('</fechaRegistro>\n');
+			texto.push('\t\t<regimenPatrimonial>');
+			texto.push(escaparXML(datos.regimenPatrimonialTxt));
+			texto.push('</regimenPatrimonial>\n');
+			texto.push('\t</datosDelMatrimonio>\n');
+			
+			texto.push('\t<usuario>');
+			texto.push(escaparXML(userName));
+			texto.push('</usuario>\n');
+			texto.push('\t<fechaHora>');
+			texto.push(escaparXML(f.getDate()+"/"+(f.getMonth() +1)+"/"+f.getFullYear()+" "+f.getHours()+":"+f.getMinutes()+":"+f.getSeconds()));
+			texto.push('</fechaHora>\n');
+			texto.push('</matrimonio>');
+			
+		} else if (numeroActo == 4) {
+			//Divorcio
+			texto.push('<divorcio>\n');
+			texto.push('\t<datosDocumento>\n');
+			texto.push('\t\t<oficialia>');
+			texto.push(escaparXML(datos.oficialia));
+			texto.push('</oficialia>\n');
+			texto.push('\t\t<libro>');
+			texto.push(escaparXML(datos.libro));
+			texto.push('</libro>\n');
+			texto.push('\t\t<foja>');
+			texto.push(escaparXML(datos.foja));
+			texto.push('</foja>\n');
+			texto.push('\t\t<tomo>');
+			texto.push(escaparXML(datos.tomo));
+			texto.push('</tomo>\n');
+			texto.push('\t\t<numeroActa>');
+			texto.push(escaparXML(datos.numeroActa));
+			texto.push('</numeroActa>\n');
+			texto.push('\t</datosDocumento>\n');
+
+			texto.push('\t<datosComunes>\n');
+			texto.push('\t\t<fechaRegistro>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaRegistro)));
+			texto.push('</fechaRegistro>\n');
+			texto.push('\t</datosComunes>\n');
+
+			texto.push('\t<curpPrimerDivorciado>');
+			texto.push(escaparXML(datos.curpEl));
+			texto.push('</curpPrimerDivorciado>\n');
+			texto.push('\t<curpSegundoDivorciado>');
+			texto.push(escaparXML(datos.curpElla));
+			texto.push('</curpSegundoDivorciado>\n');
+			texto.push('\t<identificadorElectronico>');
+			texto.push(escaparXML(datos.identElectr));
+			texto.push('</identificadorElectronico>\n');
+			texto.push('\t<cadena>');
+			texto.push(escaparXML(datos.cadena));
+			texto.push('</cadena>\n');
+
+			texto.push('\t<datosDivorciados>\n');
+			texto.push('\t\t<apellidoPaternoPrimerDivorciado>');
+			texto.push(escaparXML(datos.primerApellidoEl));
+			texto.push('</apellidoPaternoPrimerDivorciado>\n');
+			texto.push('\t\t<apellidoMaternoPrimerDivorciado>');
+			texto.push(escaparXML(datos.segundoApellidoEl));
+			texto.push('</apellidoMaternoPrimerDivorciado>\n');
+			texto.push('\t\t<nombresPrimerDivorciado>');
+			texto.push(escaparXML(datos.nombreEl));
+			texto.push('</nombresPrimerDivorciado>\n');
+			texto.push('\t\t<sexoPrimerDivorciado>');
+			texto.push(escaparXML(datos.sexoEl));
+			texto.push('</sexoPrimerDivorciado>\n');
+			texto.push('\t\t<nacionalidadPrimerDivorciado>');
+			texto.push(escaparXML(datos.nacionalidadElTxt));
+			texto.push('</nacionalidadPrimerDivorciado>\n');
+
+			texto.push('\t\t<apellidoPaternoSegundoDivorciado>');
+			texto.push(escaparXML(datos.primerApellidoElla));
+			texto.push('</apellidoPaternoSegundoDivorciado>\n');
+			texto.push('\t\t<apellidoMaternoSegundoDivorciado>');
+			texto.push(escaparXML(datos.segundoApellidoElla));
+			texto.push('</apellidoMaternoSegundoDivorciado>\n');
+			texto.push('\t\t<nombresSegundoDivorciado>');
+			texto.push(escaparXML(datos.nombreElla));
+			texto.push('</nombresSegundoDivorciado>\n');
+			texto.push('\t\t<sexoSegundoDivorciado>');
+			texto.push(escaparXML(datos.sexoElla));
+			texto.push('</sexoSegundoDivorciado>\n');
+			texto.push('\t\t<nacionalidadSegundoDivorciado>');
+			texto.push(escaparXML(datos.nacionalidadEllaTxt));
+			texto.push('</nacionalidadSegundoDivorciado>\n');
+			texto.push('\t</datosDivorciados>\n');
+
+			texto.push('\t<datosDelDivorcio>\n');
+			texto.push('\t\t<entidadFederativa>');
+			texto.push(escaparXML(datos.estadoRegNombre));
+			texto.push('</entidadFederativa>\n');
+			texto.push('\t\t<municipio>');
+			texto.push(escaparXML(datos.municipioRegNombre));
+			texto.push('</municipio>\n');
+			texto.push('\t\t<fechaResolucion>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaResolucion)));
+			texto.push('</fechaResolucion>\n');
+			texto.push('\t\t<tipoDivorcio>');
+			texto.push(escaparXML(datos.tipoDivorcioTxt));
+			texto.push('</tipoDivorcio>\n');
+			texto.push('\t</datosDelDivorcio>\n');
+
+			texto.push('\t<usuario>');
+			texto.push(escaparXML(userName));
+			texto.push('</usuario>\n');
+			texto.push('\t<fechaHora>');
+			texto.push(escaparXML(f.getDate()+"/"+(f.getMonth() +1)+"/"+f.getFullYear()+" "+f.getHours()+":"+f.getMinutes()+":"+f.getSeconds()));
+			texto.push('</fechaHora>\n');
+			texto.push('</divorcio>');
+
+		}else if (numeroActo == 5) {
+			texto.push('<reconocimiento>\n');
+			texto.push('\t<datosDocumento>\n');
+			texto.push('\t\t<oficialia>');
+			texto.push(escaparXML(datos.oficialia));
+			texto.push('</oficialia>\n');
+			texto.push('\t\t<libro>');
+			texto.push(escaparXML(datos.libro));
+			texto.push('</libro>\n');
+			texto.push('\t\t<foja>');
+			texto.push(escaparXML(datos.foja));
+			texto.push('</foja>\n');
+			texto.push('\t\t<tomo>');
+			texto.push(escaparXML(datos.tomo));
+			texto.push('</tomo>\n');
+			texto.push('\t\t<numeroActa>');
+			texto.push(escaparXML(datos.numeroActa));
+			texto.push('</numeroActa>\n');
+			texto.push('\t</datosDocumento>\n');
+			
+			texto.push('\t<datosComunes>\n');
+			texto.push('\t\t<fechaRegistro>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaRegistro)));
+			texto.push('</fechaRegistro>\n');
+			texto.push('\t\t<lugarRegistro>');
+			texto.push(escaparXML(datos.estadoRegNombre));
+			texto.push('</lugarRegistro>\n');
+			texto.push('\t</datosComunes>\n');
+			
+			texto.push('\t<curp>');
+			texto.push(escaparXML(datos.curp));
+			texto.push('</curp>\n');
+			texto.push('\t<identificadorElectronico>');
+			texto.push(escaparXML(datos.identElectr));
+			texto.push('</identificadorElectronico>\n');
+			texto.push('\t<cadena>');
+			texto.push(escaparXML(datos.cadena));
+			texto.push('</cadena>\n');
+			
+			texto.push('\t<datosReconocido>\n');
+			texto.push('\t\t<apellidoPaterno>');
+			texto.push(escaparXML(datos.primerApellido));
+			texto.push('</apellidoPaterno>\n');
+			texto.push('\t\t<apellidoMaterno>');
+			texto.push(escaparXML(datos.segundoApellido));
+			texto.push('</apellidoMaterno>\n');
+			texto.push('\t\t<nombres>');
+			texto.push(escaparXML(datos.nombre));
+			texto.push('</nombres>\n');
+			texto.push('\t\t<sexo>');
+			texto.push(escaparXML(datos.sexo));
+			texto.push('</sexo>\n');
+			texto.push('\t\t<fechaNacimiento>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaNacimiento)));
+			texto.push('</fechaNacimiento>\n');
+			texto.push('\t\t<lugarNacimiento>');
+			texto.push(escaparXML(datos.estadoNacNombre));
+			texto.push('</lugarNacimiento>\n');
+			texto.push('\t</datosReconocido>\n');
+			
+			texto.push('\t<datosReconocedor>\n');
+			texto.push('\t\t<apellidoPaterno>');
+			texto.push(escaparXML(datos.primerApellidoPrimeraPersona));
+			texto.push('</apellidoPaterno>\n');
+			texto.push('\t\t<apellidoMaterno>');
+			texto.push(escaparXML(datos.segundoApellidoPrimeraPersona));
+			texto.push('</apellidoMaterno>\n');
+			texto.push('\t\t<nombres>');
+			texto.push(escaparXML(datos.nombrePrimeraPersona));
+			texto.push('</nombres>\n');
+			texto.push('\t\t<nacionalidad>');
+			texto.push(escaparXML(datos.nacionalidadAux1Txt));
+			texto.push('</nacionalidad>\n');
+			texto.push('\t\t<curp>');
+			texto.push(escaparXML(datos.curpAux1));
+			texto.push('</curp>\n');
+			texto.push('\t</datosReconocedor>\n');
+			
+			texto.push('\t<datosMadreReconocido>\n');
+			texto.push('\t\t<apellidoPaterno>');
+			texto.push(escaparXML(datos.REC_PRI_AP_MADRE_RECDOR));
+			texto.push('</apellidoPaterno>\n');
+			texto.push('\t\t<apellidoMaterno>');
+			texto.push(escaparXML(datos.REC_SEG_AP_MADRE_RECDOR));
+			texto.push('</apellidoMaterno>\n');
+			texto.push('\t\t<nombres>');
+			texto.push(escaparXML(datos.REC_NOMBRE_MADRE_RECDOR));
+			texto.push('</nombres>\n');
+			texto.push('\t\t<nacionalidad>');
+			texto.push(escaparXML(datos.nacionalidadAux2Txt));
+			texto.push('</nacionalidad>\n');
+			texto.push('\t\t<curp>');
+			texto.push(escaparXML(datos.curpAux2));
+			texto.push('</curp>\n');
+			texto.push('\t</datosMadreReconocido>\n');
+			
+			texto.push('\t<usuario>');
+			texto.push(escaparXML(userName));
+			texto.push('</usuario>\n');
+			texto.push('\t<fechaHora>');
+			texto.push(escaparXML(f.getDate()+"/"+(f.getMonth() +1)+"/"+f.getFullYear()+" "+f.getHours()+":"+f.getMinutes()+":"+f.getSeconds()));
+			texto.push('</fechaHora>\n');
+			texto.push('</reconocimiento>\n');
+		} else if (numeroActo == 6) {
+			texto.push('<adopcion>\n');
+			texto.push('\t<datosDocumento>\n');
+			texto.push('\t\t<oficialia>');
+			texto.push(escaparXML(datos.oficialia));
+			texto.push('</oficialia>\n');
+			texto.push('\t\t<libro>');
+			texto.push(escaparXML(datos.libro));
+			texto.push('</libro>\n');
+			texto.push('\t\t<foja>');
+			texto.push(escaparXML(datos.foja));
+			texto.push('</foja>\n');
+			texto.push('\t\t<tomo>');
+			texto.push(escaparXML(datos.tomo));
+			texto.push('</tomo>\n');
+			texto.push('\t\t<numeroActa>');
+			texto.push(escaparXML(datos.numeroActa));
+			texto.push('</numeroActa>\n');
+			texto.push('\t</datosDocumento>\n');
+			
+			texto.push('\t<datosComunes>\n');
+			texto.push('\t\t<fechaRegistro>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaRegistro)));
+			texto.push('</fechaRegistro>\n');
+			texto.push('\t\t<lugarRegistro>');
+			texto.push(escaparXML(datos.estadoRegNombre));
+			texto.push('</lugarRegistro>\n');
+			texto.push('\t</datosComunes>\n');
+			
+			texto.push('\t<curp>');
+			texto.push(escaparXML(datos.curp));
+			texto.push('</curp>\n');
+			texto.push('\t<identificadorElectronico>');
+			texto.push(escaparXML(datos.identElectr));
+			texto.push('</identificadorElectronico>\n');
+			texto.push('\t<cadena>');
+			texto.push(escaparXML(datos.cadena));
+			texto.push('</cadena>\n');
+			
+			texto.push('\t<datosPersonaAdoptada>\n');
+			texto.push('\t\t<apellidoPaterno>');
+			texto.push(escaparXML(datos.primerApellido));
+			texto.push('</apellidoPaterno>\n');
+			texto.push('\t\t<apellidoMaterno>');
+			texto.push(escaparXML(datos.segundoApellido));
+			texto.push('</apellidoMaterno>\n');
+			texto.push('\t\t<nombres>');
+			texto.push(escaparXML(datos.nombre));
+			texto.push('</nombres>\n');
+			texto.push('\t\t<sexo>');
+			texto.push(escaparXML(datos.sexo));
+			texto.push('</sexo>\n');
+			texto.push('\t\t<fechaNacimiento>');
+			texto.push(escaparXML(formatearFechaLarga(datos.fechaNacimiento)));
+			texto.push('</fechaNacimiento>\n');
+			texto.push('\t\t<lugarNacimiento>');
+			texto.push(escaparXML(datos.estadoNacNombre));
+			texto.push('</lugarNacimiento>\n');
+			texto.push('\t</datosPersonaAdoptada>\n');
+			
+			texto.push('\t<datosFiliacionPersonaAdoptada>\n');
+			texto.push('\t\t<apellidoPaternoPrimeraPersona>');
+			texto.push(escaparXML(datos.primerApellidoPrimeraPersona));
+			texto.push('</apellidoPaternoPrimeraPersona>\n');
+			texto.push('\t\t<apellidoMaternoPrimeraPersona>');
+			texto.push(escaparXML(datos.segundoApellidoPrimeraPersona));
+			texto.push('</apellidoMaternoPrimeraPersona>\n');
+			texto.push('\t\t<nombresPrimeraPersona>');
+			texto.push(escaparXML(datos.nombrePrimeraPersona));
+			texto.push('</nombresPrimeraPersona>\n');
+			texto.push('\t\t<nacionalidadPrimeraPersona>');
+			texto.push(escaparXML(datos.nacionalidadAux1Txt));
+			texto.push('</nacionalidadPrimeraPersona>\n');
+			texto.push('\t\t<curpPrimeraPersona>');
+			texto.push(escaparXML(datos.curpAux1));
+			texto.push('</curpPrimeraPersona>\n');
+			
+			texto.push('\t\t<apellidoPaternoSegundaPersona>');
+			texto.push(escaparXML(datos.primerApellidoSegundaPersona));
+			texto.push('</apellidoPaternoSegundaPersona>\n');
+			texto.push('\t\t<apellidoMaternoSegundaPersona>');
+			texto.push(escaparXML(datos.segundoApellidoSegundaPersona));
+			texto.push('</apellidoMaternoSegundaPersona>\n');
+			texto.push('\t\t<nombresSegundaPersona>');
+			texto.push(escaparXML(datos.nombreSegundaPersona));
+			texto.push('</nombresSegundaPersona>\n');
+			texto.push('\t\t<nacionalidadSegundaPersona>');
+			texto.push(escaparXML(datos.nacionalidadAux2Txt));
+			texto.push('</nacionalidadSegundaPersona>\n');
+			texto.push('\t\t<curpSegundaPersona>');
+			texto.push(escaparXML(datos.curpAux2));
+			texto.push('</curpSegundaPersona>\n');
+			texto.push('\t</datosFiliacionPersonaAdoptada>\n');
+			
+			texto.push('\t<parteResolutivaJudicial>');
+			texto.push(escaparXML(datos.parteResolutivaJudicial));
+			texto.push('</parteResolutivaJudicial>\n');
+			
+			texto.push('\t<usuario>');
+			texto.push(escaparXML(userName));
+			texto.push('</usuario>\n');
+			texto.push('\t<fechaHora>');
+			texto.push(escaparXML(f.getDate()+"/"+(f.getMonth() +1)+"/"+f.getFullYear()+" "+f.getHours()+":"+f.getMinutes()+":"+f.getSeconds()));
+			texto.push('</fechaHora>\n');
+			texto.push('</adopcion>\n');
+		}
+	    //No olvidemos especificar el tipo MIME correcto :)
+	    return new Blob(texto, {
+	        type: 'application/xml'
+	    });
+	};
+	
+	function escaparXML(cadena) {
+	    if (typeof cadena !== 'string') {
+	        return '';
+	    };
+	    cadena = cadena.replace('&', '&amp;')
+	        .replace('<', '&lt;')
+	        .replace('>', '&gt;')
+	        .replace('"', '&quot;');
+	    return cadena;
+	};
+		
+	function descargarArchivo(contenidoEnBlob, nombreArchivo) {
+	    var reader = new FileReader();
+	    reader.onload = function (event) {
+	        var save = document.createElement('a');
+	        save.href = event.target.result;
+	        save.target = '_blank';
+	        save.download = nombreArchivo || 'archivo.dat';
+	        var clicEvent = new MouseEvent('click', {
+	            'view': window,
+	                'bubbles': true,
+	                'cancelable': true
+	        });
+	        save.dispatchEvent(clicEvent);
+	        (window.URL || window.webkitURL).revokeObjectURL(save.href);
+	    };
+	    reader.readAsDataURL(contenidoEnBlob);
+	};
+	
+	invocarConstanciaConsulta = function(numeroActo, datos , guia , encontrado , folio) {
+		var criteriosSeleccionados = JSON.stringify(datos).split("#").join("");
+		var guiaJson = JSON.stringify(guia);
+		var hrefAcuse = new String(contextPath)
+			+'/UtilServlet?seleccion=ACUSE_ENCONTRADO'
+			+ '&criteriosSeleccionados='+criteriosSeleccionados
+			+ '&encontrado='+encontrado
+			+ '&numeroActo='+numeroActo
+			+ '&guia='+guiaJson
+			+ '&folio='+folio
+			+ '&tipoPDF=Consulta';
+		
+		$.ajax({
+			  type: "GET",
+			  url: hrefAcuse,
+			  responseType : 'arraybuffer'
+			  ,success: function(data){
+				  var file = new Blob([data], {type: 'application/pdf'});
+				  var fileURL = URL.createObjectURL(file);			      
+				  var iframe= "<object type='application/pdf' data='"+hrefAcuse+"' style='width:100%; height:600px;'>" 
+				  				+"<embed type='application/pdf' src='"+fileURL+"' style='width:100%; height:600px;' />"
+				  				+"</object>";
+
+				  $.createModal({
+						title:'Vista previa',
+						message: iframe,
+						closeButton:true,
+						scrollable:false
+					});	
+			  }
+		});
+
+      	spinner.stop();
+		$('#modal').remove();
+	};
+	
+	agregarBotonDescargaConsulta = function(numeroActo , datos , guia,  encontrado){
+		$(document).on("click",'[id^=descargaConsulta]',function() {
+			$('<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6; modal: true;"></div>')
+				.appendTo('body');
+			spinner.spin($('#modal')[0]);
+			invocarConstanciaConsulta(numeroActo , datos ,guia , true , datos.folio);
+		});
+	};
+	
+	invocarSincronizar = function(numeroActo, datos , guia) {
+		
+		var criteriosSeleccionados = datos;
+		var guiaJson = JSON.stringify(guia);
+		var hrefAcuse = new String(contextPath)
+			+'/SincronizaServlet?seleccion=SINCRONIZA'
+			+ '&criteriosSeleccionados='+criteriosSeleccionados
+			+ '&numeroActo='+numeroActo
+			+ '&guia='+guiaJson;
+		window.location = hrefAcuse;
+		spinner.stop();
+		$('#modal').remove();
+	};
+
+	agregarBotonSincronizar = function(numeroActo , datos , guia){
+		$(document).on("click",'[id^=registraPeticion]',function() {
+			$('<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6; modal: true;"></div>')
+				.appendTo('body');
+			spinner.spin($('#modal')[0]);
+			invocarSincronizar(numeroActo , datos.curp+"|"+datos.cadena ,guia);
+		});
+	};
+	
+	invocarPadres = function(datos , guia) {
+		
+		var criteriosSeleccionados = datos;
+		var guiaJson = JSON.stringify(guia);
+		var hrefAcuse = new String(contextPath)
+			+'/PadresServlet'
+			+ '?criteriosSeleccionados='+criteriosSeleccionados
+			+ '&guia='+guiaJson;
+		window.open(hrefAcuse, "_blank", "toolbar=no, scrollbars=no, resizable=no, top=250, left=250, width=1400, height=400");
+		spinner.stop();
+		$('#modal').remove();
+	};
+
+	agregarBotonPadres = function(datos , guia){
+		$(document).on("click",'[id^=buscaPadres]',function() {
+			$('<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6; modal: true;"></div>')
+				.appendTo('body');
+			spinner.spin($('#modal')[0]);
+			invocarPadres(datos.estadoReg+"|"+datos.municipioReg+"|"+datos.oficialia+"|"+
+					datos.anioRegistro+"|"+datos.noActa+"|"+datos.actaBis+"|"+datos.curp+"|"+datos.cadena, guia);
+		});
+	};
+});
+
+var vacio =  "----";
+
+validarNulos = function(valor , sustituto) {
+	return (typeof valor === 'undefined' || valor === null || valor.length === 0) ? sustituto
+			: valor;
+};
+
+validarPropiedades = function(aValidar) {
+	for ( var prop in aValidar) {
+		aValidar[prop] = validarNulos(aValidar[prop] ,vacio);
+	}
+	return aValidar;
+};
+
+formateoHora = function(hora, minuto) {
+	var formateada = parseInt(hora) < 10 ? '0' + hora : hora;
+	formateada += ':';
+	formateada += parseInt(minuto) < 10 ? '0' + minuto : minuto;
+	return formateada;
+};
+
+reemplazarCaseFechas = function(aCambiar) {
+	return aCambiar.replace('enero', 'Enero').replace('febrero', 'Febrero')
+			.replace('marzo', 'Marzo').replace('abril', 'Abril').replace(
+					'mayo', 'Mayo').replace('junio', 'Junio').replace('julio',
+					'Julio').replace('agosto', 'Agosto').replace('septiembre',
+					'Septiembre').replace('octubre', 'Octubre').replace(
+					'noviembre', 'Noviembre').replace('diciembre', 'Diciembre');
+};
+
+pad = function(numero, ceros) {
+	var s = String(numero);
+	if (typeof (ceros) !== "number") {
+		size = 2;
+	}
+
+	while (s.length < ceros) {
+		s = "0" + s;
+	}
+	return s;
+};

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<!-- saved from url=(0057)https://cevar.registrocivil.gob.mx/eVAR/ConsultaFolio.jsp -->
+<html lang="es"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">   
+ 	<!-- Meta -->
+	
+	<meta http-equiv="expires" content="0">
+	<meta http-equiv="Cache-Control" content="no-cache">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Sistema de Verificación de Actos Registrales</title>
+
+	<!-- CSS -->
+	<link rel="stylesheet" href="./Sistema de Verificación de Actos Registrales_files/bootstrap.min.css">
+	<link rel="stylesheet" href="./Sistema de Verificación de Actos Registrales_files/renapo.css">
+
+	<link rel="icon" href="https://cevar.registrocivil.gob.mx/eVAR/images/favicon.png" type="image/png">
+
+	<script type="text/javascript" async="" src="./Sistema de Verificación de Actos Registrales_files/include.js.descarga"></script><script>
+		var contextPath = new String('/eVAR');
+		var appLocation = window.location.protocol + "/" + window.location.host+contextPath + "/";
+		var userApp = "9";
+		
+		if (!String.prototype.trim) {
+			String.prototype.trim=function(){return this.replace(/(?:(?:^|\n)\s+|\s+(?:$|\n))/g,'').replace(/\s+/g,' ');};
+		}
+
+
+		function limpiarMensaje(id){
+			 while (id.hasChildNodes()) {
+			        id.removeChild(id.firstChild);
+			    }
+		}
+
+		revisarMensaje = function(mensaje){
+			var mensajeDiv = document.getElementById("mensajeDiv");
+			limpiarMensaje( mensajeDiv );
+			var compare = new String(mensaje);
+			if(compare !== "null" && compare.indexOf("null")===-1 ){
+				var msjLoginError = document.createElement("small");
+				msjLoginError.setAttribute('id', 'msjLoginError');
+				msjLoginError.setAttribute('class', 'help-block');
+				msjLoginError.innerHTML = mensaje;
+				mensajeDiv.appendChild(msjLoginError);
+			}
+		};
+		
+		
+	</script>
+	
+	<link rel="stylesheet" type="text/css" href="./Sistema de Verificación de Actos Registrales_files/main.css">
+	<style>
+		body {
+			background:  url('images/alas.png') no-repeat fixed left 75px;
+			height: 100%;
+		}
+		.page > .container {
+			background:  url('images/alas.png') no-repeat fixed left 75px;
+			height: auto;
+		}
+	</style>
+<style type="text/css"></style></head>
+<body>
+
+	<!-- Encabezado de Pagina-->
+	<!--
+- @project: Verificacion de Actos Registrales
+- @author LCC. ENRIQUE RIVERA ROBLES
+- @since 10/07/2015
+- @version 2.1.0
+- @update: 28/06/2020
+- @copyright: © 2016 - 2020 RENAPO SECRETARIA DE GOBERNACION 
+- @description: El sistema de Verificación de Atos Registrales es un aplicativo desarrollado por 
+- la Direccion de Sistemas (DS) perteneciente al REGISTRO NACIONAL DE POBLACION (RENAPO)
+- para la verificacion de las Actas Impresas a traves de portal ActaMex
+-->
+
+
+
+	<header style="background-color:#611232;">
+		<div class="container">
+			<div class="row">
+				<div class="col-md-4 text-center">
+					<img src="./Sistema de Verificación de Actos Registrales_files/segob2024-prototipo2.png" width="500px" height="120px" alt="SEGOB">
+				</div>
+				<div class="col-md-8 text-right" style="color: #FFF;">
+					<h3>Secretaría de Gobernación</h3>
+					<h4>Subsecretaría de Derechos Humanos, Migración y Población</h4>
+					<h5>Dirección General del Registro Nacional de Población e Identidad</h5>
+				</div>
+			</div>
+			
+		</div>
+	</header>
+
+	<!-- Contenido -->
+    <main class="page">
+
+		<div class="container">
+		
+			<!-- Section block -->
+			<div class="section_block no_border_top">
+				<div class="col-md-4 col-md-push-8">	
+					<div id="busquedaPor" class="clear panel-group ficha-collapse">
+						<div id="buscarFolio" class="panel panel-danger form_block">
+							<div class="panel-heading text-center">
+								<h4 class="panel-title" data-parent="#busquedaPor" data-toggle="collapse">Búsqueda por Identificador Electrónico</h4>
+							</div>
+							<div class="panel-collapse collapse in">
+							<form id="folioFormPublica" autocomplete="off" novalidate="novalidate" class="bv-form"><button type="submit" class="bv-hidden-submit" style="display: none; width: 0px; height: 0px;" disabled="disabled"></button>
+							<input type="hidden" id="token" name="tokenN" value="VerificaActaMex">
+								<div class="panel-body">
+									<div class="form-group has-feedback has-success">
+										<label class="control-label" for="folioDigital">Identificador Electrónico: </label>
+										<input type="text" id="folioDigital" name="folioDigital" class="form-control" required="" size="35" maxlength="20" placeholder="Ingresa el Identificador Electrónico" data-bv-field="folioDigital"><i class="form-control-feedback glyphicon glyphicon-ok" data-bv-icon-for="folioDigital" style="display: block;"></i>
+									<small class="help-block" data-bv-validator="notEmpty" data-bv-for="folioDigital" data-bv-result="VALID" style="display: none;">Identificador Electrónico requerido</small><small class="help-block" data-bv-validator="stringLength" data-bv-for="folioDigital" data-bv-result="VALID" style="display: none;">Es necesario proporcionar el Identificador Electrónico completo</small><small class="help-block" data-bv-validator="regexp" data-bv-for="folioDigital" data-bv-result="VALID" style="display: none;">El Identificador Electrónico solo puede contener números</small></div>			
+								</div>
+								
+								<div class="panel-body">
+									<div class="form-group has-feedback has-success">
+										<label class="control-label" for="userCaptcha">Código de verificación</label>
+										<input type="text" id="userCaptcha" name="userCaptcha" class="form-control" minlength="4" maxlength="6" required="" tabindex="1" placeholder="Ingresar el Código mostrado en la imagen" aria-describedby="code-ico" data-bv-field="userCaptcha" autocomplete="off" style="text-transform: uppercase;"><i class="form-control-feedback glyphicon glyphicon-ok" data-bv-icon-for="userCaptcha" style="display: block;"></i>
+									<small class="help-block" data-bv-validator="notEmpty" data-bv-for="userCaptcha" data-bv-result="VALID" style="display: none;">Código de Verificación requerido</small><small class="help-block" data-bv-validator="stringLength" data-bv-for="userCaptcha" data-bv-result="VALID" style="display: none;">El Código debe ser de 5 caracteres de longitud</small><small class="help-block" data-bv-validator="regexp" data-bv-for="userCaptcha" data-bv-result="VALID" style="display: none;">El Código solo puede contener números y letras</small></div>			
+									<div id="botDetectCaptcha" data-captchastylename="botDetect"><div>
+
+  <link type="text/css" rel="stylesheet" href="./Sistema de Verificación de Actos Registrales_files/simple-captcha-endpoint">
+  <div class="BDC_CaptchaDiv " id="botDetect_CaptchaDiv" style="width: 210px !important; height: 50px !important; "><!--
+ --><div class="BDC_CaptchaImageDiv" id="botDetect_CaptchaImageDiv" style="width: 180px !important; height: 50px !important;"><!--
+   --><a href="https://captcha.org/captcha.html?java" title="What is CAPTCHA validation?" id="botDetect_HelpLink"><img class="BDC_CaptchaImage" id="botDetect_CaptchaImage" src="./Sistema de Verificación de Actos Registrales_files/simple-captcha-endpoint(1)" alt="Cargando código ..." style=""></a><!--
+ --></div><!--
+ --><div class="BDC_CaptchaIconsDiv" id="botDetect_CaptchaIconsDiv" style="width: 24px !important;"><!--
+   --><a class="BDC_ReloadLink" id="botDetect_ReloadLink" href="https://cevar.registrocivil.gob.mx/eVAR/ConsultaFolio.jsp#" title="Actualizar código" style="display: inline-block !important;"><img class="BDC_ReloadIcon" id="botDetect_ReloadIcon" src="./Sistema de Verificación de Actos Registrales_files/simple-captcha-endpoint(2)" alt="Actualizar código"></a><!--
+   --><a rel="nofollow" class="BDC_SoundLink" id="botDetect_SoundLink" href="https://cevar.registrocivil.gob.mx/eVAR/simple-captcha-endpoint?get=sound&amp;c=botDetect&amp;t=d72f349520de4c9cb74198c417b94d17" title="Escuchar código"><img class="BDC_SoundIcon" id="botDetect_SoundIcon" src="./Sistema de Verificación de Actos Registrales_files/simple-captcha-endpoint(3)" alt="Escuchar código"></a><!--
+   --><div class="BDC_Placeholder" id="botDetect_AudioPlaceholder">&amp;nbsp;</div><!-- --></div>
+   
+   <input type="hidden" id="BDC_VCID_botDetect" name="BDC_VCID_botDetect" value="d72f349520de4c9cb74198c417b94d17">
+   <input type="hidden" id="BDC_BackWorkaround_botDetect" name="BDC_BackWorkaround_botDetect" value="0">
+   <input type="hidden" id="BDC_Hs_botDetect" name="BDC_Hs_botDetect" value="38ad1f7e2a3281c9bc90409dc126d69f3b17ab2d">
+   <input type="hidden" id="BDC_SP_botDetect" name="BDC_SP_botDetect" value="999747403">
+
+  </div>
+</div></div>
+								</div>
+								
+								<div id="mensajeDiv" class="form-group has-feedback has-error text-center">
+								</div>
+								
+							
+								<div class="panel-footer">
+									<div class="form-group">
+										<button class="btn btn-big btn-default mr_20" type="reset" tabindex="1" id="folioCancelarF">
+											<span class="glyphicon glyphicon-remove-sign"></span> Cancelar
+										</button>
+										<button class="btn btn-big btn-primary" type="submit" tabindex="1" id="folioBuscar" disabled="disabled">
+											<span class="glyphicon glyphicon-search"></span> Buscar 
+										</button>																	
+									</div>
+								</div>
+							</form>
+							</div>
+						</div>
+					</div>
+					<div id="tipoSeleccion"></div>					
+					<div id="pdfContainer" style="z-index: -1;"></div>
+				</div>				
+				<div class="col-md-8 col-md-pull-4">				
+					<div id="dialog-message" class="panel panel-danger form_block collapse">
+						<div class="panel-heading text-center">
+							<h4 class="panel-title">Verificar Datos de Entrada</h4>
+						</div>
+						<div class="panel-body">
+							<strong id="ErrDesc"></strong>			
+						</div>
+						<div class="panel-footer">
+							<div class="form-group">
+								<button type="button" class="btn btn-primary collapse mr_20" id="no_existencia">
+									Imprimir Acuse <span class="glyphicon glyphicon-print"></span>
+								</button>
+								<button type="button" class="btn btn-default" id="closeDialog">Cerrar</button>
+							</div>
+						</div>
+					</div>
+					<div id="coincidencias" class="panel panel-danger form_block collapse" style="display: block;"><div class="panel-heading text-center"><h2 class="panel-title">REGISTRO</h2></div><div><table width="100%" class="hoja"><tbody><tr align="center"><td> <table width="100%"><tbody><tr><td class="escudoActa"></td></tr></tbody></table></td> <td> <table width="100%"><tbody><tr align="center"> <td width="40%"></td> <td style="width:60%; text-align:center;padding:5px;" class="sombreadoActa">Clave Única de Registro de Población</td> </tr><tr align="center"> <td style="width:40%; font-size:small;" class="tituloActa">Estados Unidos Mexicanos </td><td width="60%" class="datosActa">MOZM910319HMNNVR05<br><br> </td></tr> <tr align="center"> <td width="40%" class="tituloActa2"> Extracto de </td><td style="width:60%; text-align:center;padding:5px;" class="datosActa">AAVM860116MMNLLN07<br><br> </td></tr> <tr align="center"> <td width="40%" class="tituloActa"> Acta de Divorcio</td> <td style="width:60%; text-align:center;padding:5px;" class="sombreadoActa">Entidad de Registro</td></tr><tr align="center"><td width="40%"></td> <td class="datosActa">MEXICO </td></tr><tr align="center"><td width="40%"></td> <td class="sombreadoActa" style="width:60%; text-align:center;padding:5px;">Fecha de inscripción </td></tr><tr align="center"><td width="40%"></td> <td class="datosActa" style="width:60%; text-align:center;padding:5px;">11 DE DICIEMBRE DE 2019 </td></tr></tbody></table> </td></tr> <tr align="center"> <td colspan="10" class="sombreadoDatosActa">Datos de los divorciados</td></tr><tr class="datosActa"> <td colspan="10"><br><br><br> <table width="100%" class="lineaActa"><tbody><tr align="center"><td width="33%">MARCO ANTONIO</td><td width="33%">MONCISVAIS</td><td width="33%">ZAVALA</td> </tr></tbody></table></td></tr><tr> <td colspan="10"> <table width="100%"><tbody><tr align="center"> <td width="33%"> Nombre(s): </td><td width="33%"> Primer Apellido:</td><td width="33%">Segundo Apellido:</td> </tr></tbody></table></td></tr><tr class="datosActa"> <td colspan="10"><br><br><br> <table width="100%" class="lineaActa"><tbody><tr align="center"> <td width="33%">HOMBRE </td><td width="33%"> MEXICANA</td><td width="33%">MOZM910319HMNNVR05</td> </tr></tbody></table></td></tr><tr> <td colspan="10"> <table width="100%"><tbody><tr align="center"> <td width="33%"> Sexo: </td><td width="33%"> Nacionalidad:</td><td width="33%">CURP: </td></tr></tbody></table></td></tr><tr class="datosActa"> <td colspan="10"><br><br><br> <table width="100%" class="lineaActa"><tbody><tr align="center"><td width="33%">MINETTE</td><td width="33%">ALVARADO</td><td width="33%">VILLANUEVA</td> </tr></tbody></table></td></tr><tr> <td colspan="10"> <table width="100%"><tbody><tr align="center"> <td width="33%"> Nombre(s): </td><td width="33%"> Primer Apellido:</td><td width="33%">Segundo Apellido:</td> </tr></tbody></table></td></tr><tr class="datosActa"> <td colspan="10"><br><br><br> <table width="100%" class="lineaActa"><tbody><tr align="center"> <td width="33%">MUJER </td><td width="33%"> MEXICANA</td><td width="33%">AAVM860116MMNLLN07</td> </tr></tbody></table></td></tr><tr> <td colspan="10"> <table width="100%"><tbody><tr align="center"> <td width="33%"> Sexo: </td><td width="33%"> Nacionalidad:</td><td width="33%">CURP: </td></tr></tbody></table></td></tr><tr align="center"> <td colspan="10" class="sombreadoDatosActa">Datos del acto de divorcio</td></tr><tr class="datosActa"> <td colspan="10"><br><br><br> <table width="100%" class="lineaActa"><tbody><tr align="center"> <td width="30%">MEXICO</td><td width="15%">TIJUANA</td><td width="30%">14 DE OCTUBRE DE 2019</td><td width="25%"> <div style="border-width:0; overflow: hidden; height:50px; position: relative; left: 10px;"><div style="overflow: hidden; height:95%; width:95%;  position: relative; left: 5px; font-size: 11px;"><span>NA</span></div></div></td> </tr></tbody></table></td></tr><tr><td colspan="10"> <table width="100%"><tbody><tr class="datosRegistrado"> <td width="30%" align="center"> Entidad Federativa: </td><td width="15%" align="center">Municipio:</td><td width="30%" align="center">Fecha:</td><td width="25%" align="center"> Vía de la disolución:</td></tr><tr><td><br><br><br></td></tr><tr> <td colspan="10"><table width="100%" border="1"><tbody><tr class="sombreadoDatosActa" align="left"><th> Anotaciones Marginales</th> <th> Certificación</th></tr><tr> <td width="40%"><div style="overflow: hidden; height:95%; width:95%;  position: relative; left: 5px; font-size: 11px;"><span>Sin anotaciones marginales</span></div></td> <td width="60%" class="espaciado" height=""> Se expide el presente extracto del acto registral  de Divorcio que fue inscrito por el Registro Civil de  <strong>MEXICO</strong>. <br><br><br></td></tr></tbody></table></td></tr><tr><td><br><br></td></tr><tr><td colspan="6">	<table width="100%" border="1" style="border-collapse: collapse;">	<tbody><tr class="sombreadoDatosActa" align="center">		<td width="15%">Cadena del Acto</td><td width="15%">Fecha de Registro</td>   </tr><tr><td style="text-align: center; padding: 10px;">41509900022019000620</td><td style="text-align: center; padding: 10px;">11 DE DICIEMBRE DE 2019</td></tr></tbody></table></td></tr><tr><td><br><br></td></tr></tbody></table><table width="100%" border="1" style="border-collapse: collapse;"><tbody><tr class="sombreadoDatosActa" align="center"><td width="20%">Oficialía</td><td width="20%">Libro</td><td width="20%">Foja</td><td width="20%">Tomo</td><td width="20%">Acta</td></tr><tr align="center"><td width="20%">2</td><td width="20%">1</td><td width="20%">62</td><td width="20%">----</td><td width="20%">62</td></tr></tbody></table></td></tr><tr><td><br></td></tr></tbody></table><br><br><br><table width="100%"><tbody><tr><td colspan="" align="right"><colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan><colspan>&nbsp;&nbsp;&nbsp;&nbsp;</colspan></td></tr></tbody></table></div></div>
+					<div id="spinner-message" class="spinner-message collapse"></div>
+				</div>
+			</div>
+			
+		</div>
+	</main>
+
+	<!-- Modal -->
+	<div class="modal" id="modalDialog" tabindex="-1" role="dialog" aria-labelledby="modalTitle">
+		<div class="modal-dialog" role="document" style="z-index:1050;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">×</span></button>
+					<h4 class="modal-title alert alert-danger" id="modalTitle">Notas</h4>
+				</div>
+				<div class="modal-body" id="modalMessage">Sin anotaciones marginales</div>
+				<div class="modal-footer" id="modalBnt">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>	
+	</div>
+	
+	<div class="modal" id="modalTrans" tabindex="-1" role="dialog" aria-labelledby="modalTransTitle">
+		<div class="modal-dialog" role="document" style="z-index:1050;">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-label="Cerrar"><span aria-hidden="true">×</span></button>
+					<h4 class="modal-title alert alert-danger" id="modalTransTitle"></h4>
+				</div>
+				<div class="modal-body" id="modalTransMessage"></div>
+				<div class="modal-footer" id="modalBnt">
+					<!-- button type="button" class="btn btn-default" data-dismiss="modal" id="folioCancelarF">Cerrar</button -->
+					<button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
+				</div>
+			</div>
+		</div>	
+	</div>
+	
+	<!-- Lightbox para visualizar images -->
+	
+
+	<div id="lightbox" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+		<div class="modal-dialog" style="z-index:1050;">
+			<button type="button" class="close hidden" data-dismiss="modal" aria-hidden="true">×</button>
+			<div class="modal-content">
+				<div class="modal-body"><img src="https://cevar.registrocivil.gob.mx/eVAR/ConsultaFolio.jsp" alt="" id="imgcentera"></div>
+			</div>
+		</div>
+	</div>
+
+
+	<!-- JS -->
+	<script src="./Sistema de Verificación de Actos Registrales_files/jquery.min.js.descarga"></script>
+	<!-- <script src="js/jquery.migrate.js"></script> -->
+	<script src="./Sistema de Verificación de Actos Registrales_files/jquery-captcha.min.js.descarga"></script>
+	<script src="./Sistema de Verificación de Actos Registrales_files/bootstrap.min.js.descarga"></script>
+	<script src="./Sistema de Verificación de Actos Registrales_files/spin.min.js.descarga"></script>
+	<script src="./Sistema de Verificación de Actos Registrales_files/jquery.spin.js.descarga"></script>
+	<script src="./Sistema de Verificación de Actos Registrales_files/mustache.js.descarga"></script>
+	
+	<script src="./Sistema de Verificación de Actos Registrales_files/templates.js.descarga"></script>
+	<script src="./Sistema de Verificación de Actos Registrales_files/templateInscripciones.js.descarga"></script>
+	<script src="./Sistema de Verificación de Actos Registrales_files/viewPDF.js.descarga"></script>
+	<script src="./Sistema de Verificación de Actos Registrales_files/flowEvents.js.descarga"></script>
+
+	<script src="./Sistema de Verificación de Actos Registrales_files/validator.min.js.descarga"></script>
+    <script src="./Sistema de Verificación de Actos Registrales_files/es_ES.js.descarga"></script>
+	<script src="./Sistema de Verificación de Actos Registrales_files/folio.js.descarga"></script>
+
+
+</body></html>

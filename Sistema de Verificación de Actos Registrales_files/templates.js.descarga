@@ -1,0 +1,283 @@
+/*
+ * Funciones que retornan un template determinado, 
+ * usa Mustache.js para hacer el binding de propiedades contra el template a mostrar
+ * */
+coincidenciasNacimientoTemplate = function(toFormat , index , guia){
+	var template = "<table   id=\"tablaCoincidencias\" width='100%' border=\"0\" >"+
+	 "<tr ><td colspan=\"10\" class=\"TitleBar\" >Resultados de la B&uacute;squeda</td></tr>"+
+	 "<tr><td><br/></td></tr>"+
+    "<tr class=\"celdaUno\"><td  colspan=\"3\">Nombre del Padre </td><td colspan=\"4\">Nombre de la Madre</td></tr>" +
+	 "<tr class=\"celdaDos\"><td colspan=\"3\" id=\"nombrePadre\"><strong>{{nombrePrimeraPersona}} {{primerApellidoPrimeraPersona}} {{segundoApellidoPrimeraPersona}}</strong></td>" +
+	 "	<td colspan=\"4\" id=\"nombreMadre\"><strong>{{nombreSegundaPersona}} {{primerApellidoSegundaPersona}} {{segundoApellidoSegundaPersona}}</strong></td></tr>" +
+	 "<tr class=\"celdaUno\"><tdcolspan=\"7\"></td></tr>"+
+	 "<tr class=\"celdaDos\"><td class=\"celdaBlanca\" >CURP</td><td>&nbsp;&nbsp;&nbsp;Nombre</td>" +
+	 "<td><table width=\"100%\"><tbody><tr><td>Primer</td></tr><tr><td> Apellido</td></tr></tbody></table></td>" +
+	 "<td><table width=\"100%\"><tbody><tr><td>Segundo</td></tr><tr><td> Apellido</td></tr></tbody></table></td>" +
+	 "<td ><table width=\"100%\"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>" +
+	 "<td align='center'>Sexo</td>" +
+	 "<td><table width=\"100%\"><tbody><tr><td>Entidad de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td></tr>"+
+	 "<tr id ='ajustar' class=\"celdaUno\"><td id=\"datoCurp\"><strong>{{curp}}</strong></td>" +
+	 "    <td id=\"datoNombre\"><strong>&nbsp;&nbsp;{{nombre}}</strong></td>"+
+	 "    <td id=\"datoPaterno\"><strong>&nbsp;{{primerApellido}}</strong></td>" +
+	 "    <td id=\"datoMaterno\"><strong>{{segundoApellido}}</strong></td>"+
+	 "	  <td id=\"datoFecha\"><strong>{{fechaNacimiento}}</strong></td>" +
+	 "	  <td id=\"datoSexo\"><strong>&nbsp;&nbsp;{{sexo}}</strong></td>"+
+	 "	  <td id=\"datoEdoNac\"><strong>&nbsp;&nbsp;&nbsp; {{estadoNacNombre}}</strong></td></tr>"+
+	 "<tr class=\"celdaDos\">" +
+	 "<tr><td><br/></br><br/></td></tr>"+
+	 '<td colspan="4" align="center"><input type="button" class="button" value="Mostrar Datos" id="acta'+index+'"/></td>' +
+	 "</tr><tr><td><br/></br><br/></td></tr>";
+	generarParametrosBotonActa(guia);
+	return Mustache.render(template, toFormat);
+}
+
+coincidenciasDefuncionTemplate = function(toFormat , index , guia){
+
+	var template = "<table   id=\"tablaCoincidencias\" width='100%' border=\"0\" >"
+	+ '<tr ><td colspan="10" class="TitleBar" >Resultados de la B&uacute;squeda</td></tr>'
+	 +'<tr><td><br/></td></tr>'
+    +'<tr class="celdaUno"><td  colspan="3">CURP </td><td colspan="4">Cadena</td></tr>' 
+	 +'<tr class="celdaDos"><td colspan="3" id="nombrePadre"><strong>{{curp}}</strong></td>' 
+	 +'	<td colspan="4" id="nombreMadre"><strong>{{cadena}} </strong></td></tr>'
+	 +'<tr class="celdaUno"><tdcolspan="7"></td></tr>'
+	 +'<tr class="celdaDos"><td class="celdaBlanca" >Fecha de Defunc&oacute;n</td><td>&nbsp;&nbsp;&nbsp;Nombre</td>' 
+	 +'<td><table width="100%"><tbody><tr><td>Primer</td></tr><tr><td> Apellido</td></tr></tbody></table></td>' 
+	 +'<td><table width="100%"><tbody><tr><td>Segundo</td></tr><tr><td> Apellido</td></tr></tbody></table></td>'
+	 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>' 
+	 +'<td align="center">Sexo</td>' 
+	 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td></tr>'
+	 +'<tr id ="ajustar" class="celdaUno"><td id="fechaDef"><strong>{{fechaDefuncionTxt}}</strong></td>'
+	 +'    <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombre}}</strong></td>'
+	 +'    <td id="datoPaterno"><strong>&nbsp;{{primerApellido}}</strong></td>' 
+	 +'    <td id="datoMaterno"><strong>{{segundoApellido}}</strong></td>'
+	 +'	  <td id="datoFecha"><strong>{{fechaNacimiento}}</strong></td>'
+	 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexo}}</strong></td>'
+	 +'	  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{estadoNacNombre}}</strong></td></tr>'
+	 +'<tr id ="ajustar" class="celdaDos"><td id="conyugeDef" colspan="8">C&oacute;nyuge</td></tr>'
+	 +'<tr><td id="nomConyuge" colspan="8"><strong>&nbsp;&nbsp;&nbsp; {{nombreConyuge}}</strong></td></tr>'
+	 +'<tr class="celdaDos"><td></td></tr>'
+	 +'<tr class="celdaDos">' 
+	 +'<tr><td><br/></br><br/></td></tr>'
+	 +'<td colspan="4" align="center"><input type="button" class="button" value="Mostrar Datos" id="acta'+index+'"/></td>' 
+	 +'</tr><tr><td><br/></br><br/></td></tr>';
+	generarParametrosBotonActa(guia);
+	return Mustache.render(template, toFormat);
+}
+
+coincidenciasMatrimonioTemplate = function(toFormat , index , guia){
+
+	var template = '<table   id="tablaCoincidencias" width="100%" border="0" >'
+	+ '<tr ><td colspan="10" class="TitleBar" >Resultados de la B&uacute;squeda</td></tr>'
+	 +'<tr><td><br/></td></tr>'
+	 +'<tr class="celdaUno"><td  colspan="8">Cadena</td></tr>' 
+	 +'<tr class="celdaDos"><td colspan="8"><strong>{{cadena}}</strong></td></tr>'
+	 +'<tr class="celdaUno"><td  colspan="8">Fecha de registro del matrimonio</td></tr>' 
+	 +'<tr class="celdaDos"><td colspan="8"><strong>{{fechaRegistro}}</strong></td></tr>'
+	 
+	 +'<tr class="celdaUno"><td  colspan="8"> C\u00f3nyuge 1</td></tr>'
+	 
+	 +'<tr class="celdaUno"><tdcolspan="7"></td></tr>'
+	 +'<tr class="celdaDos"><td>&nbsp;&nbsp;&nbsp;Nombre</td>' 
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Paterno</td></tr></tbody></table></td>' 
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Materno</td></tr></tbody></table></td>'
+	 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>' 
+	 +'<td align="center">Sexo</td>' 
+	 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Registro</td></tr></tbody></table></td></tr>'
+	 +'<tr id ="ajustar" class="celdaUno">'
+	 +'    <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombreEl}}</strong></td>'
+	 +'    <td id="datoPaterno"><strong>&nbsp;{{primerApellidoEl}}</strong></td>' 
+	 +'    <td id="datoMaterno"><strong>{{segundoApellidoEl}}</strong></td>'
+	 +'	  <td id="datoFecha"><strong>{{fechaNacimientoElTxt}}</strong></td>'
+	 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexoEl}}</strong></td>'
+	 +'	  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{entidadCodigoRegElTxt}}</strong></td></tr>'
+	 
+	 +'<tr class="celdaUno"><td  colspan="8"> C\u00f3nyuge 2</td></tr>'
+	 
+	 +'<tr class="celdaUno"><tdcolspan="7"></td></tr>'
+	 +'<tr class="celdaDos"><td>&nbsp;&nbsp;&nbsp;Nombre</td>' 
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Paterno</td></tr></tbody></table></td>' 
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Materno</td></tr></tbody></table></td>'
+	 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>' 
+	 +'<td align="center">Sexo</td>' 
+	 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Registro</td></tr></tbody></table></td></tr>'
+	 +'<tr id ="ajustar" class="celdaUno">'
+	 +'    <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombreElla}}</strong></td>'
+	 +'    <td id="datoPaterno"><strong>&nbsp;{{primerApellidoElla}}</strong></td>' 
+	 +'    <td id="datoMaterno"><strong>{{segundoApellidoElla}}</strong></td>'
+	 +'	  <td id="datoFecha"><strong>{{fechaNacimientoEllaTxt}}</strong></td>'
+	 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexoElla}}</strong></td>'
+	 +'	  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{entidadCodigoRegEllaTxt}}</strong></td></tr>'
+
+	 +' <tr><td><br/><br/><br/></td></tr>'
+	
+	 +'<tr class=\"celdaDos\">'
+	 +'<tr><td><br/></br><br/></td></tr>'
+	 +'<td colspan="4" align="center"><input type="button" class="button" value="Mostrar Datos" id="acta'+index+'"/></td>' 
+	 +'</tr><tr><td><br/></br><br/></td></tr>';
+	generarParametrosBotonActa(guia);
+	return Mustache.render(template, toFormat);
+}
+
+coincidenciasDivorcioTemplate = function(toFormat , index , guia){
+	
+	var template = '<table   id="tablaCoincidencias" width="100%" border="0" >'
+		+ '<tr ><td colspan="10" class="TitleBar" >Resultados de la B&uacute;squeda</td></tr>'
+		 +'<tr><td><br/></td></tr>'
+		 +'<tr class="celdaUno"><td  colspan="8">Cadena</td></tr>' 
+		 +'<tr class="celdaDos"><td colspan="8"><strong>{{cadena}}</strong></td></tr>'
+		 +'<tr class="celdaUno"><td  colspan="8">Fecha de registro del Divorcio</td></tr>' 
+		 +'<tr class="celdaDos"><td colspan="8"><strong>{{fechaRegistro}}</strong></td></tr>'
+		 
+		 +'<tr class="celdaUno"><td  colspan="8"> Divorciado 1</td></tr>'
+		 
+		 +'<tr class="celdaUno"><tdcolspan="7"></td></tr>'
+		 +'<tr class="celdaDos"><td>&nbsp;&nbsp;&nbsp;Nombre</td>' 
+		 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Paterno</td></tr></tbody></table></td>' 
+		 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Materno</td></tr></tbody></table></td>'
+		 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>' 
+		 +'<td align="center">Sexo</td>' 
+		 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Registro</td></tr></tbody></table></td></tr>'
+		 +'<tr id ="ajustar" class="celdaUno">'
+		 +'    <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombreEl}}</strong></td>'
+		 +'    <td id="datoPaterno"><strong>&nbsp;{{primerApellidoEl}}</strong></td>' 
+		 +'    <td id="datoMaterno"><strong>{{segundoApellidoEl}}</strong></td>'
+		 +'	  <td id="datoFecha"><strong>{{fechaNacimientoElTxt}}</strong></td>'
+		 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexoEl}}</strong></td>'
+		 +'	  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{entidadCodigoRegElTxt}}</strong></td></tr>'
+		 
+		 +'<tr class="celdaUno"><td  colspan="8"> Divorciado 2</td></tr>'
+		 
+		 +'<tr class="celdaUno"><tdcolspan="7"></td></tr>'
+		 +'<tr class="celdaDos"><td>&nbsp;&nbsp;&nbsp;Nombre</td>' 
+		 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Paterno</td></tr></tbody></table></td>' 
+		 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Materno</td></tr></tbody></table></td>'
+		 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>' 
+		 +'<td align="center">Sexo</td>' 
+		 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Registro</td></tr></tbody></table></td></tr>'
+		 +'<tr id ="ajustar" class="celdaUno">'
+		 +'    <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombreElla}}</strong></td>'
+		 +'    <td id="datoPaterno"><strong>&nbsp;{{primerApellidoElla}}</strong></td>' 
+		 +'    <td id="datoMaterno"><strong>{{segundoApellidoElla}}</strong></td>'
+		 +'	  <td id="datoFecha"><strong>{{fechaNacimientoEllaTxt}}</strong></td>'
+		 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexoElla}}</strong></td>'
+		 +'	  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{entidadCodigoRegEllaTxt}}</strong></td></tr>'
+
+		 +' <tr><td><br/><br/><br/></td></tr>'
+		
+		 +'<tr class=\"celdaDos\">'
+		 +'<tr><td><br/></br><br/></td></tr>'
+		 +'<td colspan="4" align="center"><input type="button" class="button" value="Mostrar Datos" id="acta'+index+'"/></td>' 
+		 +'</tr><tr><td><br/></br><br/></td></tr>';
+	generarParametrosBotonActa(guia);
+	return Mustache.render(template, toFormat);
+}
+
+coincidenciasReconocimientoTemplate = function(toFormat , index , guia){
+	//6dps , 6deps reconocedor, cadena, curp
+	var template = '<table   id="tablaCoincidencias" width="100%" border="0" >'
+		+ '<tr ><td colspan="10" class="TitleBar" >Resultados de la B&uacute;squeda</td></tr>'
+		 +'<tr><td><br/></td></tr>'
+		 +'<tr class="celdaUno"><td  colspan="8">Cadena</td></tr>' 
+		 +'<tr class="celdaDos"><td colspan="8"><strong>{{cadena}}</strong></td></tr>'
+		 +'<tr class="celdaDos"><td class="celdaBlanca" >CURP</td><td>&nbsp;&nbsp;&nbsp;Nombre</td>'
+		 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Paterno</td></tr></tbody></table></td>'
+		 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Materno</td></tr></tbody></table></td>'
+		 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>'
+		 +'<td align="center">Sexo</td>'
+		 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td></tr>'
+		 +'<tr id ="ajustar" class="celdaUno"><td id="datoCurp"><strong>{{curp}}</strong></td>'
+		 +'   <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombre}}</strong></td>'
+		 +'    <td id="datoPaterno"><strong>&nbsp;{{primerApellido}}</strong></td>'
+		 +'    <td id="datoMaterno"><strong>{{segundoApellido}}</strong></td>'
+		 +'	  <td id="datoFecha"><strong>{{fechaNacimiento}}</strong></td>'
+		 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexo}}</strong></td>'
+		 +'	  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{estadoRegNombre}}</strong></td></tr>'
+
+		 +'<tr class="celdaUno"><td  colspan="8">Reconocedor</td></tr>' 
+		 
+		 +'<td><table width="100%"><tbody><tr><td>CURP</td></tr></tbody></table></td>'
+		 +'<td><table width="100%"><tbody><tr><td>Nombre</td></tr></tbody></table></td>'
+		 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Paterno</td></tr></tbody></table></td>'
+		 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Materno</td></tr></tbody></table></td>'
+		 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>'
+		 +'<td align="center">Sexo</td>'
+		 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Registro</td></tr></tbody></table></td></tr>'
+		 +'<tr id ="ajustar" class="celdaUno\"><td id=\"datoCurp\"><strong>{{curpAux1}}</strong></td>'
+		 +'   <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombrePrimeraPersona}}</strong></td>'
+		 +'  <td id="datoPaterno"><strong>&nbsp;{{primerApellidoPrimeraPersona}}</strong></td>'
+		 +'    <td id="datoMaterno"><strong>{{segundoApellidoPrimeraPersona}}</strong></td>'
+		 +'	  <td id="datoFecha"><strong>{{fechaNacimientoReconocedor}}</strong></td>'
+		 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexoReconocedor}}</strong></td>'
+		 +'	  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{entidadRegistroReconocedor}}</strong></td></tr>'
+ 
+		 +'<tr class=\"celdaDos\">'
+		 +'<tr><td><br/></br><br/></td></tr>'
+		 +'<td colspan="4" align="center"><input type="button" class="button" value="Mostrar Datos" id="acta'+index+'"/></td>'
+		 +'</tr><tr><td><br/></br><br/></td></tr>';
+	generarParametrosBotonActa(guia);
+	return Mustache.render(template, toFormat);
+}
+
+coincidenciasAdopcionTemplate = function(toFormat , index , guia){
+
+	var template = '<table   id="tablaCoincidencias" width="100%" border=\"0\" >'
+	 +'<tr ><td colspan="10" class="TitleBar" >Resultados de la B&uacute;squeda</td></tr>'
+	 +'<tr><td><br/></td></tr>'
+	 
+	 +'<tr class="celdaUno"><td  colspan="8">Cadena</td></tr>' 
+	 +'<tr class="celdaDos"><td colspan="8"><strong>{{cadena}}</strong></td></tr>'
+	
+	 +'<tr class="celdaDos"><td class=\"celdaBlanca\" >CURP</td><td>&nbsp;&nbsp;&nbsp;Nombre</td>'
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Paterno</td></tr></tbody></table></td>'
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Materno</td></tr></tbody></table></td>'
+	 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>'
+	 +'<td align="center">Sexo</td>'
+	 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Registro</td></tr></tbody></table></td></tr>'
+	 +'<tr id ="ajustar" class="celdaUno"><td id="datoCurp"><strong>{{curp}}</strong></td>'
+	 +'    <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombre}}</strong></td>'
+	 +'    <td id="datoPaterno"><strong>&nbsp;{{primerApellido}}</strong></td>'
+	 +'    <td id="datoMaterno"><strong>{{segundoApellido}}</strong></td>'
+	 +'  <td id="datoFecha"><strong>{{fechaNacimiento}}</strong></td>'
+	 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexo}}</strong></td>'
+	 +'  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{estadoRegNombre}}</strong></td></tr>'
+	 
+	 +'<tr class="celdaUno"><td  colspan="8">Progenitor 1</td></tr>' 
+	 
+	 +'<tr class="celdaDos"><td class=\"celdaBlanca\" >CURP</td><td>&nbsp;&nbsp;&nbsp;Nombre</td>'
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Paterno</td></tr></tbody></table></td>'
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Materno</td></tr></tbody></table></td>'
+	 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>'
+	 +'<td align="center">Sexo</td>'
+	 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Registro</td></tr></tbody></table></td></tr>'
+	 +'<tr id ="ajustar" class="celdaUno"><td id="datoCurp"><strong>{{curpAux1}}</strong></td>'
+	 +'    <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombrePrimeraPersona}}</strong></td>'
+	 +'    <td id="datoPaterno"><strong>&nbsp;{{primerApellidoPrimeraPersona}}</strong></td>'
+	 +'    <td id="datoMaterno"><strong>{{segundoApellidoPrimeraPersona}}</strong></td>'
+	 +'  <td id="datoFecha"><strong>{{fechaNacElAdoptante}}</strong></td>'
+	 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexoElAdoptante}}</strong></td>'
+	 +'  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{entRegElAdoptante}}</strong></td></tr>'
+	 
+	 +'<tr class="celdaUno"><td  colspan="8">Progenitor 2</td></tr>' 
+	
+	 +'<tr class="celdaDos"><td class=\"celdaBlanca\" >CURP</td><td>&nbsp;&nbsp;&nbsp;Nombre</td>'
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Paterno</td></tr></tbody></table></td>'
+	 +'<td><table width="100%"><tbody><tr><td>Apellido</td></tr><tr><td> Materno</td></tr></tbody></table></td>'
+	 +'<td ><table width="100%"><tbody><tr><td>Fecha de </td></tr><tr><td> Nacimiento</td></tr></tbody></table></td>'
+	 +'<td align="center">Sexo</td>'
+	 +'<td><table width="100%"><tbody><tr><td>Entidad de </td></tr><tr><td> Registro</td></tr></tbody></table></td></tr>'
+	 +'<tr id ="ajustar" class="celdaUno"><td id="datoCurp"><strong>{{curpAux2}}</strong></td>'
+	 +'    <td id="datoNombre"><strong>&nbsp;&nbsp;{{nombreSegundaPersona}}</strong></td>'
+	 +'    <td id="datoPaterno"><strong>&nbsp;{{primerApellidoSegundaPersona}}</strong></td>'
+	 +'    <td id="datoMaterno"><strong>{{segundoApellidoSegundaPersona}}</strong></td>'
+	 +'  <td id="datoFecha"><strong>{{fechaNacLaAdoptante}}</strong></td>'
+	 +'	  <td id="datoSexo"><strong>&nbsp;&nbsp;{{sexoLaAdoptante}}</strong></td>'
+	 +'  <td id="datoEdoNac"><strong>&nbsp;&nbsp;&nbsp; {{entRegLaAdoptante}}</strong></td></tr>'
+	 
+	 +'<tr class="celdaDos">' 
+	 +'<tr><td><br/></br><br/></td></tr>'
+	 +'<td colspan="4" align="center"><input type="button" class="button" value="Mostrar Datos" id="acta'+index+'"/></td>' 
+	 +'</tr><tr><td><br/></br><br/></td></tr>';
+	generarParametrosBotonActa(guia);
+	return Mustache.render(template, toFormat);
+};
+

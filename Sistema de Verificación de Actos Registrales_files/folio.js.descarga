@@ -1,0 +1,121 @@
+/* ***********************************************************************
+ * Project: eVAR - Verificación de Actos Registrales  
+ * Author(s): LCC. ENRIQUE RIVERA ROBLES
+ * Creation Date: 27/07/2015
+ * Last Modified: 30/07/2015
+ * Copyright Notice: DIRECCION DE SISTEMAS - RENAPO
+ * @(#)GOBMX - folio.js
+ * Description: Validaciones requeridas para datos de busqueda del Acto Registral
+ *********************************************************************** */
+$(document).ready(function() {
+
+    var captcha = $('#botDetectCaptcha').captcha({
+        captchaEndpoint: 'simple-captcha-endpoint'
+    });
+
+	/*
+	 * EAVS inicio
+	 * 
+	 * invocarWsFolioPublica
+	 * */
+	
+	$("#folioFormPublica").bootstrapValidator({
+        feedbackIcons: {
+            valid: 'glyphicon glyphicon-ok',
+            invalid: 'glyphicon glyphicon-remove',
+            validating: 'glyphicon glyphicon-refresh'
+        },
+		message: 'Valor no permitido',
+		fields: {
+			folioDigital: {
+				message: 'Identificador Electr&oacute;nico no v&aacute;lido',
+				validators: {
+					notEmpty: {	message: 'Identificador Electr&oacute;nico requerido'	},
+					stringLength: {	min: 20, max: 20, message: 'Es necesario proporcionar el Identificador Electr&oacute;nico completo'},
+                    regexp: {
+                        regexp: /^[0-9]+$/,
+                        message: 'El Identificador Electr&oacute;nico solo puede contener n&uacute;meros'
+                    }
+				}
+			},
+			userCaptcha: {
+				validators: {
+					notEmpty: {	message: 'C&oacute;digo de Verificaci&oacute;n requerido'	},
+					stringLength: { min: 5,	max: 5, message: 'El C&oacute;digo debe ser de 5 caracteres de longitud'},
+					regexp: {  regexp: /^[a-zA-Z0-9]+$/, message: 'El C&oacute;digo solo puede contener n&uacute;meros y letras'}
+				}
+			}
+		}
+	}).on('success.form.bv', function(e) {
+        // Prevent form submission
+        e.preventDefault();
+        
+        invocarWsFolioPublica();
+    });
+	
+	
+	$('#folioCancelarF, #closeDialog').click(function() {
+        $('#folioFormPublica').data('bootstrapValidator').resetForm(true);
+        regresoF();
+    });
+	
+	invocarWsFolioPublica = function() {
+		var elFolio = $('input[name="folioDigital"]').val().trim();
+		var token = $('input[name="tokenFOLION"]').val();
+
+        var postData = {
+			folio : elFolio,
+			tipo : 'naFolioPublica',
+			numActo : 99,
+			token : token,
+            captchaId: captcha.getCaptchaId(),
+			captchaCode : captcha.getUserEnteredCaptchaCode()
+        };
+		
+        /*$.ajax({
+            method: 'POST',
+            url: 'ConsultaInfoServlet',
+            dataType: 'json',
+            contentType: 'application/json',
+            data: JSON.stringify(postData),
+            success: function (responseText) {
+    			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+    				window.location='ConsultaFolio.jsp';
+    			}
+    			else if(typeof responseText==='object'){
+    				var arreglo = ['5',elFolio];
+    				llenarListaCoincidencias(responseText , arreglo);
+    			}
+            },
+            error: function (error) {
+                throw new Error(error);
+            }
+			error: function (xhr, status, thrownError) {
+				if(xhr.status == 401) {	__sesionTimeOut();}
+				if(xhr.status == 0) {console.log(xhr);}
+				_limpiarMsjModal();
+				_buildMsj(_getHttpResponseStatusCodes(xhr.status), ["#alert-danger-msj"]);
+				$('button[name="btnSearchPersonaSW"]').prop( "disabled", false );
+			}
+        });*/
+        
+        $.get('ConsultaInfoServlet', postData, function(responseText) {
+			if(typeof responseText ==='string' && responseText.indexOf('<html>')>0){
+				window.location='ConsultaFolio.jsp';
+			}
+			else if(typeof responseText==='object'){
+				var arreglo = ['5',elFolio];
+				llenarListaCoincidencias(responseText , arreglo);
+			}
+		});
+		$(
+				'<div id ="modal" style="position:absolute;top:50%;left:50%;display:block; background-color:#C0C0C0; filter:alpha(opacity=60);opacity:0.6;-moz-opacity:0.6;modal: true;"></div>')
+				.appendTo('body');
+		spinner.spin($('#modal')[0]);
+	};
+	
+	/* FIN */
+
+});
+
+

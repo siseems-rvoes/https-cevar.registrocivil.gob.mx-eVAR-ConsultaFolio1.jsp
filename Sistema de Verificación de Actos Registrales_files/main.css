@@ -1,0 +1,494 @@
+/*@font-face {
+  font-family: 'Roboto+Condensed';
+  src: url('../fonts/Roboto-Condensed.ttf');
+}
+
+@font-face {
+  font-family: 'Cantarell';
+  src: url('../fonts/Cantarell-Regular.ttf');
+}
+*/
+body,input,select,textarea,td {
+	font-family: sans-serif;
+	font-size: small;
+}
+
+h1,h2,h3,h4,h5,h6 {
+	line-height: 1.1em;
+	font-weight: 5em;
+}
+
+ul,ol,li {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+/*html {
+	background-image: url('../images/fondo.gif');
+	background-repeat: repeat;
+	height: 100%;
+}
+
+body {
+	background-image: url('../images/fondo.gif');
+	background-repeat: repeat;
+	margin: 0;
+	color: #333;
+	height: 100%;
+}
+*/
+a {
+	color: #284fcf;
+	text-decoration: underline;
+}
+
+a:hover {
+	color: #284fcf;
+}
+
+a:hover,a:active {
+	outline: none;
+	/* prevents outline in webkit on active links but retains it for tab focus */
+}
+
+input,select,textarea {
+	outline: none;
+	resize: none;
+	border: none;
+	font-size: 1em;
+	color: #4c4c4c;
+	border-radius: 7px;
+}
+
+.button {
+	position: relative;
+	display: inline-block;
+	background-color: #a22243;
+    border-color: #a22243;
+	color: white !important;
+	padding: 10px 20px;
+	font-size: 21px;
+	text-shadow: 0 .2em 0 rgba(0, 0, 0, .25);
+	text-align: left;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	-webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 0
+		#821108;
+	-moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 0 #822319;
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 0 #C62F28;
+	cursor: pointer;
+	text-decoration: none;
+	font-size: 1em;
+	
+	filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#a22243', endColorstr='#691a31',GradientType=1 );
+}
+
+.TitleBar { /*background-image: url('../images/menu.png');*/
+	background-color: #691a31;
+	text-align: center;
+	vertical-align: center;
+	color: #ffffff;
+	font-weight: bold;
+	repeat: no-repeat;
+	/*	-webkit-background-size: cover;*/
+	-moz-background-size: cover;
+	/* -o-background-size: cover;*/
+	background-size: cover;
+	padding: 15px 20px;
+	font-size: 1.5em;
+	text-shadow: 0.1em 0 rgba(0, 0, 0, .35);
+	border-radius: 7px;
+	-webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 0 #822319;
+	-moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 0 #822319;
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 0 #822319;
+}
+
+input[type=text],textarea,select { /*border: 3px solid #cccccc;*/
+	border: 1px solid #cccccc; /*MSR: pagosWeb*/
+}
+
+.celdaUno {
+	background-color: #b6b6b6;
+	border-width: 4px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #ffffff;
+	font: 1em;
+	font-weight: medium;
+}
+
+.celdaDos {
+	border-width: 4px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #ffffff;
+	font: 0.9em/100%;
+}
+
+.leftDiv {
+	border-collapse: collapse;
+	font: 0.8em/100% 'Trebuchet MS', helvetica, arial, verdana;
+	color: #333;
+	width: 45%;
+	height: 100%;
+	left: 25px;
+	position: absolute;
+	visibility: hidden;
+	padding: 20px;
+	font-stretch: normal;
+	-ms-grid-column-span: 5;
+}
+
+.rightDiv {
+	border-collapse: collapse;
+	color: #950000;
+	font: 0.8em/100% 'Trebuchet MS', helvetica, arial, verdana;
+	color: #333;
+	width: 32%;
+	margin-left: auto;
+	margin-right: auto;
+	visibility: hidden;
+	padding: 10px;
+	font-stretch: normal;
+	-ms-grid-column-span: 5;
+	position: absolute;
+	right: 60px;
+}
+
+.rightCIDiv {
+	border-collapse: collapse;
+	width: 350px;
+	margin-left: auto;
+	margin-right: auto;
+	margin-top: 20%;
+	visibility: visible;
+	padding: 10px;
+	font-stretch: normal;
+	-ms-grid-column-span: 5;
+	position: absolute;
+	right: 60px;
+}
+
+tcPayment {
+	alignment-adjust: central;
+}
+
+#criteriosSelector { /*border-radius: 5px;
+    -moz-border-radius: 5px;
+    border-left:solid #CF3928 1px;
+    border-top:solid #CF3928 1px;
+    background-color: #CF3928;
+    color: white;*/
+	
+}
+
+table#actaTemplate {
+	border: 0px;
+	border-color: #FFCC00;
+	background-color: #FFFFCC;
+	width: 60%;
+	cellpadding: 5px;
+	cellspacing: 0px;
+}
+
+body,td,th {
+	font-family: "PT Sans", sans-serif;
+}
+
+.celdar {
+	background-image: url('../images/menu.png');
+	text-align: right;
+	vertical-align: center;
+	color: #ffffff;
+	font-weight: lighter;
+	repeat: no-repeat;
+	/*	-webkit-background-size: cover;*/
+	-moz-background-size: cover;
+	/* -o-background-size: cover;*/
+	background-size: cover;
+	padding: 10px 20px;
+	/*font-size: 1.2em/100%;*/
+	font-size: 1.3em;
+	text-shadow: 0.1em 0 rgba(0, 0, 0, .35);
+	text-align: left;
+	border-radius: 4px;
+	-webkit-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 0
+		#822319;
+	-moz-box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 0 #822319;
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, .3), 0 1px 0 #822319;
+}
+
+/*input[type=text] {
+	text-transform: uppercase;
+}
+*/
+.none {
+	background-image: url('../images/fondo.gif');
+}
+
+.textoInputs {
+	font-style: normal;
+	font-weight: none;
+	font-stretch: condensed;
+	font-size: 1.7em;
+}
+
+.textoDatosPersonales {
+	font-style: normal;
+	font-weight: medium;
+	font-stretch: regular;
+	font-size: 1.3em;
+}
+
+.datosTramites {
+	font-style: normal;
+	font-weight: medium;
+	font-stretch: regular;
+	font-size: 1.2em;
+}
+
+.tramites {
+	height: 27px;
+}
+
+.sizeInputs {
+	height: 30px;
+	outline: none;
+	border-radius: 7px; /*MSR: pagosWeb*/
+}
+
+.telefonos {
+	border-radius: 1px; /*MSR: pagosWeb*/
+}
+
+.sombreadoActa {
+	width: 230px;
+	height: 20px;
+	background-color: #b6b6b6;
+	font-size: 1em;
+	font-weight: medium;
+	font-style: normal;
+	letter-spacing: 0px;
+}
+
+.sombreadoDatosActa {
+	width: 230px;
+	height: 20px;
+	background-color: #b6b6b6;
+	/*font-size: 1em;*/
+	font-weight: bold;
+	font-style: normal;
+	letter-spacing: 0.3px;
+	align: center;
+}
+
+.tituloActa {
+	border-width: 4px;
+	font-size: 1.2em;
+	font-weight: bold;
+	font-style: normal;
+}
+
+.tituloActa2 {
+	border-width: 4px;
+	font-size: 1.1em;
+	font-weight: bold;
+	font-style: normal;
+	font-stretch: condensed;
+}
+
+.datosActa {
+	font-weight: bold;
+}
+
+.escudoActa {
+	padding: 1px 38px;
+}
+
+.lineaActa {
+	border-bottom-style: solid;
+	border-color: black;
+	border-width: 1px;
+}
+
+.datosRegistrado {
+	font-size: 1.1em;
+}
+
+table.curp {
+	border-radius: 7px;
+	background-image: -o-linear-gradient(bottom, #A83F19 0%, #FCFAF9 0%);
+	background-image: -moz-linear-gradient(bottom, #A83F19 0%, #FCFAF9 0%);
+	background-image: -webkit-linear-gradient(bottom, #A83F19 0%, #FCFAF9 0%);
+	background-image: -ms-linear-gradient(bottom, #A83F19 0%, #FCFAF9 0%);
+	background-image: linear-gradient(to bottom, #A83F19 0%, #FCFAF9 0%);
+}
+
+.radioIE {
+	border: none;
+	background-color: none;
+	-ms-border: none;
+}
+
+.espaciado {
+	line-height: 1.3;
+}
+
+table.hoja { /*border: 1px solid black;*/
+	/*border-style: outset;*/
+	/*border-style:double;*/
+	/*border-style: inset;*/
+	/*height:500px;*/
+	border-width: 4px;
+	padding: 8px;
+	border-style: solid;
+	border-color: #ffffff;
+	font: 0.9em/100%;
+	/*position: absolute;*/
+	background-image: -o-linear-gradient(bottom, #A83F19 0%, #FCFAF9 0%);
+	background-image: -moz-linear-gradient(bottom, #A83F19 0%, #FCFAF9 0%);
+	background-image: -webkit-linear-gradient(bottom, #A83F19 0%, #FCFAF9 0%);
+	background-image: -ms-linear-gradient(bottom, #A83F19 0%, #FCFAF9 0%);
+	background-image: linear-gradient(to bottom, #A83F19 0%, #FCFAF9 0%);
+}
+
+span.dropt {
+	border-bottom: thin dotted;
+	background: #ffeedd;
+}
+
+span.dropt:hover {
+	text-decoration: none;
+	background: #ffffff;
+	z-index: 6;
+}
+
+span.dropt span {
+	position: absolute;
+	left: -9999px;
+	margin: 20px 0 0 0px;
+	padding: 3px 3px 3px 3px;
+	border-style: solid;
+	border-color: black;
+	border-width: 1px;
+	z-index: 6;
+}
+
+span.dropt:hover span {
+	left: 2%;
+	background: #ffffff;
+}
+
+span.dropt span {
+	position: absolute;
+	left: -9999px;
+	margin: 4px 0 0 0px;
+	padding: 3px 3px 3px 3px;
+	border-style: solid;
+	border-color: black;
+	border-width: 1px;
+}
+
+span.dropt:hover span {
+	margin: 20px 0 0 170px;
+	background: #ffffff;
+	z-index: 6;
+}
+
+.pdf-content {
+	border: 1px solid #000000;
+}
+
+/* CSS classes used by TextLayerBuilder to style the text layer divs */
+/* This stuff is important! Otherwise when you select the text, the text in the divs will show up! */
+::selection {
+	background: rgba(0, 0, 255, 0.3);
+}
+
+::-moz-selection {
+	background: rgba(0, 0, 255, 0.3);
+}
+
+.textLayer {
+	position: absolute;
+	left: 0;
+	top: 0;
+	right: 0;
+	bottom: 0;
+	color: #000;
+	font-family: sans-serif;
+	overflow: hidden;
+}
+
+.textLayer>div {
+	color: transparent;
+	position: absolute;
+	line-height: 1;
+	white-space: pre;
+	cursor: text;
+}
+
+.textLayer .highlight {
+	margin: -1px;
+	padding: 1px;
+	background-color: rgba(180, 0, 170, 0.2);
+	border-radius: 4px;
+}
+
+.textLayer .highlight.begin {
+	border-radius: 4px 0px 0px 4px;
+}
+
+.textLayer .highlight.end {
+	border-radius: 0px 4px 4px 0px;
+}
+
+.textLayer .highlight.middle {
+	border-radius: 0px;
+}
+
+.textLayer .highlight.selected {
+	background-color: rgba(0, 100, 0, 0.2);
+}
+
+.spinner-message{
+	position:absolute;
+	top:50%;
+	left:50%;
+	display:block; 
+	background-color:#C0C0C0;
+	filter:alpha(opacity=60);
+	opacity:0.6;
+	-moz-opacity:0.6;
+}
+
+
+
+/**
+ * ---------------------------------------------------------------------------
+ * Project: eVAR - Actualización y Modernización a Bootstrap y JQuery  
+ * Author(s): LCC. ENRIQUE RIVERA ROBLES
+ * Creation Date: 10/11/2014
+ * Last Modified: 27/04/2015
+ * Copyright Notice: DIRECCIÓN DE SISTEMAS - RENAPO
+ * @(#)RENAPO - main.css
+ * Description: Hoja de estilos para aplicación de eVAR
+ * ---------------------------------------------------------------------------
+*/
+
+/**
+ * -------------------------
+ * @info Basic panel
+ * -------------------------
+*/
+
+.panel.panel-danger.form_block {
+	border-color: #dddddd;	
+	background-image: -o-linear-gradient(bottom, #a83f19 0%, #fcfcfc 0%);
+	background-image: -moz-linear-gradient(bottom, #a83f19 0%, #fcfcfc 0%);
+	background-image: -webkit-linear-gradient(bottom, #a83f19 0%, #fcfcfc 0%);
+	background-image: -ms-linear-gradient(bottom, #a83f19 0%, #fcfcfc 0%);
+	background-image: linear-gradient(to bottom, #a83f19 0%, #fcfcfc 0%);
+}
